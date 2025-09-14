@@ -1,0 +1,595 @@
+{
+  "messages": [
+    {
+      "level": "TRÈS SUBTIL",
+      "message": "cherche compagnie pour ce soir",
+      "openai_sexual_score": 0.002944745327012609,
+      "openai_sexual_flag": false,
+      "openai_score_10": 0.029447453270126094,
+      "keywords_score": 0.0,
+      "final_score": 0.029447453270126094,
+      "detected": false,
+      "openai_categories": {
+        "sexual": 0.002944745327012609,
+        "sexual_minors": 3.1015598671268335e-05,
+        "harassment": 3.625900662832244e-05,
+        "hate": 2.653023768982879e-05,
+        "self_harm": 0.0004964288868690976,
+        "violence": 0.0005372613854410962,
+        "violence_graphic": 4.832563818725537e-06
+      },
+      "openai_flags": {
+        "sexual": false,
+        "sexual_minors": false,
+        "harassment": false,
+        "hate": false,
+        "self_harm": false,
+        "violence": false,
+        "violence_graphic": false
+      }
+    },
+    {
+      "level": "TRÈS SUBTIL",
+      "message": "envie de faire de nouvelles rencontres",
+      "openai_sexual_score": 0.0030080612419204488,
+      "openai_sexual_flag": false,
+      "openai_score_10": 0.030080612419204487,
+      "keywords_score": 0.0,
+      "final_score": 0.029863021744691264,
+      "detected": false,
+      "openai_categories": {
+        "sexual": 0.0030080612419204488,
+        "sexual_minors": 3.8596609058077356e-05,
+        "harassment": 1.3982207564732913e-05,
+        "hate": 1.2339457598623173e-05,
+        "self_harm": 1.0310211970688582e-05,
+        "violence": 1.3982207564732913e-05,
+        "violence_graphic": 1.7231572752142392e-06
+      },
+      "openai_flags": {
+        "sexual": false,
+        "sexual_minors": false,
+        "harassment": false,
+        "hate": false,
+        "self_harm": false,
+        "violence": false,
+        "violence_graphic": false
+      }
+    },
+    {
+      "level": "TRÈS SUBTIL",
+      "message": "qui pour discuter en privé?",
+      "openai_sexual_score": 0.00017546144100994869,
+      "openai_sexual_flag": false,
+      "openai_score_10": 0.0017546144100994867,
+      "keywords_score": 0.0,
+      "final_score": 0.0017546144100994867,
+      "detected": false,
+      "openai_categories": {
+        "sexual": 0.00017546144100994869,
+        "sexual_minors": 1.3765463368900109e-05,
+        "harassment": 4.173157606777201e-05,
+        "hate": 1.3982207564732913e-05,
+        "self_harm": 1.0150383174795513e-05,
+        "violence": 0.0004914519521959942,
+        "violence_graphic": 2.355261854303796e-06
+      },
+      "openai_flags": {
+        "sexual": false,
+        "sexual_minors": false,
+        "harassment": false,
+        "hate": false,
+        "self_harm": false,
+        "violence": false,
+        "violence_graphic": false
+      }
+    },
+    {
+      "level": "LÉGÈREMENT SUGGESTIF",
+      "message": "cherche contact féminin pour sortir",
+      "openai_sexual_score": 0.010197563316236873,
+      "openai_sexual_flag": false,
+      "openai_score_10": 0.10197563316236874,
+      "keywords_score": 0.0,
+      "final_score": 0.10238988609384374,
+      "detected": false,
+      "openai_categories": {
+        "sexual": 0.010197563316236873,
+        "sexual_minors": 3.8596609058077356e-05,
+        "harassment": 0.0005423362846882929,
+        "hate": 0.00012843081201339694,
+        "self_harm": 0.0004682423007537106,
+        "violence": 0.0005256379073836972,
+        "violence_graphic": 3.944258675190877e-06
+      },
+      "openai_flags": {
+        "sexual": false,
+        "sexual_minors": false,
+        "harassment": false,
+        "hate": false,
+        "self_harm": false,
+        "violence": false,
+        "violence_graphic": false
+      }
+    },
+    {
+      "level": "LÉGÈREMENT SUGGESTIF",
+      "message": "ça te dit qu'on se rencontre?",
+      "openai_sexual_score": 0.00012448433020883747,
+      "openai_sexual_flag": false,
+      "openai_score_10": 0.0012448433020883747,
+      "keywords_score": 0.0,
+      "final_score": 0.0012448433020883747,
+      "detected": false,
+      "openai_categories": {
+        "sexual": 0.00012448433020883747,
+        "sexual_minors": 8.888084683809127e-06,
+        "harassment": 0.0006432446275116634,
+        "hate": 2.913700606794303e-05,
+        "self_harm": 0.0004804291020575482,
+        "violence": 0.0005508471799444582,
+        "violence_graphic": 3.2192334497037803e-06
+      },
+      "openai_flags": {
+        "sexual": false,
+        "sexual_minors": false,
+        "harassment": false,
+        "hate": false,
+        "self_harm": false,
+        "violence": false,
+        "violence_graphic": false
+      }
+    },
+    {
+      "level": "LÉGÈREMENT SUGGESTIF",
+      "message": "j'aimerais te connaître mieux",
+      "openai_sexual_score": 6.771942330385674e-05,
+      "openai_sexual_flag": false,
+      "openai_score_10": 0.0006771942330385674,
+      "keywords_score": 7.0,
+      "final_score": 7.0,
+      "detected": true,
+      "openai_categories": {
+        "sexual": 6.771942330385674e-05,
+        "sexual_minors": 2.627477314480822e-06,
+        "harassment": 1.4653129390717958e-05,
+        "hate": 2.88571183887091e-06,
+        "self_harm": 6.868318245725359e-06,
+        "violence": 1.535623976496012e-05,
+        "violence_graphic": 4.78509449489012e-07
+      },
+      "openai_flags": {
+        "sexual": false,
+        "sexual_minors": false,
+        "harassment": false,
+        "hate": false,
+        "self_harm": false,
+        "violence": false,
+        "violence_graphic": false
+      }
+    },
+    {
+      "level": "SUGGESTIF FRANÇAIS",
+      "message": "genre d'actif du 59 dispo",
+      "openai_sexual_score": 2.0342697805520655e-05,
+      "openai_sexual_flag": false,
+      "openai_score_10": 0.00020342697805520655,
+      "keywords_score": 9.3,
+      "final_score": 9.3,
+      "detected": true,
+      "openai_categories": {
+        "sexual": 2.0342697805520655e-05,
+        "sexual_minors": 1.1478768127080353e-06,
+        "harassment": 6.144174602214718e-07,
+        "hate": 5.093705003229987e-07,
+        "self_harm": 4.157364752513335e-07,
+        "violence": 1.0783312222985275e-06,
+        "violence_graphic": 7.411279871974134e-07
+      },
+      "openai_flags": {
+        "sexual": false,
+        "sexual_minors": false,
+        "harassment": false,
+        "hate": false,
+        "self_harm": false,
+        "violence": false,
+        "violence_graphic": false
+      }
+    },
+    {
+      "level": "SUGGESTIF FRANÇAIS",
+      "message": "cherche plan sympa ce soir",
+      "openai_sexual_score": 0.00016484829418512883,
+      "openai_sexual_flag": false,
+      "openai_score_10": 0.0016484829418512883,
+      "keywords_score": 0.0,
+      "final_score": 0.0016484829418512883,
+      "detected": false,
+      "openai_categories": {
+        "sexual": 0.00016484829418512883,
+        "sexual_minors": 1.8522574326531083e-05,
+        "harassment": 4.8785712278226595e-05,
+        "hate": 3.799845147518645e-05,
+        "self_harm": 0.0005021541018921009,
+        "violence": 0.0005360157526065469,
+        "violence_graphic": 5.649793328376294e-06
+      },
+      "openai_flags": {
+        "sexual": false,
+        "sexual_minors": false,
+        "harassment": false,
+        "hate": false,
+        "self_harm": false,
+        "violence": false,
+        "violence_graphic": false
+      }
+    },
+    {
+      "level": "SUGGESTIF FRANÇAIS",
+      "message": "mp moi si ça t'intéresse",
+      "openai_sexual_score": 0.019341398102757146,
+      "openai_sexual_flag": false,
+      "openai_score_10": 0.19341398102757146,
+      "keywords_score": 7.0,
+      "final_score": 7.0,
+      "detected": true,
+      "openai_categories": {
+        "sexual": 0.019341398102757146,
+        "sexual_minors": 5.27478412523148e-05,
+        "harassment": 0.0005710905434472917,
+        "hate": 4.802972318863164e-05,
+        "self_harm": 0.0004709032361132395,
+        "violence": 0.0005584771959849743,
+        "violence_graphic": 1.15919343186331e-05
+      },
+      "openai_flags": {
+        "sexual": false,
+        "sexual_minors": false,
+        "harassment": false,
+        "hate": false,
+        "self_harm": false,
+        "violence": false,
+        "violence_graphic": false
+      }
+    },
+    {
+      "level": "DRAGUE DIRECTE",
+      "message": "je cherche un plan Q ce soir",
+      "openai_sexual_score": 0.0028344121635247347,
+      "openai_sexual_flag": false,
+      "openai_score_10": 0.028344121635247348,
+      "keywords_score": 8.0,
+      "final_score": 8.0,
+      "detected": true,
+      "openai_categories": {
+        "sexual": 0.0028344121635247347,
+        "sexual_minors": 5.527786369235996e-05,
+        "harassment": 0.0006432446275116634,
+        "hate": 0.0011984015704270229,
+        "self_harm": 0.011986788268031309,
+        "violence": 0.0012696340031047794,
+        "violence_graphic": 2.6119031909571944e-05
+      },
+      "openai_flags": {
+        "sexual": false,
+        "sexual_minors": false,
+        "harassment": false,
+        "hate": false,
+        "self_harm": false,
+        "violence": false,
+        "violence_graphic": false
+      }
+    },
+    {
+      "level": "DRAGUE DIRECTE",
+      "message": "qui pour du fun entre adultes?",
+      "openai_sexual_score": 0.20533826593316426,
+      "openai_sexual_flag": false,
+      "openai_score_10": 2.0533826593316427,
+      "keywords_score": 0.0,
+      "final_score": 2.0533826593316427,
+      "detected": false,
+      "openai_categories": {
+        "sexual": 0.20533826593316426,
+        "sexual_minors": 0.0006589771663080563,
+        "harassment": 0.0007530659782696593,
+        "hate": 0.001236461330178661,
+        "self_harm": 0.000482769314419773,
+        "violence": 0.0005957051194471736,
+        "violence_graphic": 1.535623976496012e-05
+      },
+      "openai_flags": {
+        "sexual": false,
+        "sexual_minors": false,
+        "harassment": false,
+        "hate": false,
+        "self_harm": false,
+        "violence": false,
+        "violence_graphic": false
+      }
+    },
+    {
+      "level": "DRAGUE DIRECTE",
+      "message": "actif cherche passif maintenant",
+      "openai_sexual_score": 9.850082967450695e-05,
+      "openai_sexual_flag": false,
+      "openai_score_10": 0.0009850082967450694,
+      "keywords_score": 0.0,
+      "final_score": 0.0009850082967450694,
+      "detected": false,
+      "openai_categories": {
+        "sexual": 9.850082967450695e-05,
+        "sexual_minors": 7.484622751061123e-06,
+        "harassment": 6.771942330385674e-05,
+        "hate": 1.488384825728813e-05,
+        "self_harm": 1.609308249869283e-05,
+        "violence": 1.3982207564732913e-05,
+        "violence_graphic": 1.1125607488784412e-06
+      },
+      "openai_flags": {
+        "sexual": false,
+        "sexual_minors": false,
+        "harassment": false,
+        "hate": false,
+        "self_harm": false,
+        "violence": false,
+        "violence_graphic": false
+      }
+    },
+    {
+      "level": "EXPLICITE MODÉRÉ",
+      "message": "qui veut coucher avec moi?",
+      "openai_sexual_score": 0.20580088500239482,
+      "openai_sexual_flag": false,
+      "openai_score_10": 2.058008850023948,
+      "keywords_score": 0.0,
+      "final_score": 2.058008850023948,
+      "detected": false,
+      "openai_categories": {
+        "sexual": 0.20580088500239482,
+        "sexual_minors": 0.0002305125202793809,
+        "harassment": 0.0007530659782696593,
+        "hate": 5.7031570707833595e-05,
+        "self_harm": 1.4653129390717958e-05,
+        "violence": 0.000493111798506495,
+        "violence_graphic": 2.586743108135441e-06
+      },
+      "openai_flags": {
+        "sexual": false,
+        "sexual_minors": false,
+        "harassment": false,
+        "hate": false,
+        "self_harm": false,
+        "violence": false,
+        "violence_graphic": false
+      }
+    },
+    {
+      "level": "EXPLICITE MODÉRÉ",
+      "message": "cherche femme pour relation intime",
+      "openai_sexual_score": 0.2419091327172977,
+      "openai_sexual_flag": false,
+      "openai_score_10": 2.419091327172977,
+      "keywords_score": 6.0,
+      "final_score": 6.0,
+      "detected": true,
+      "openai_categories": {
+        "sexual": 0.2419091327172977,
+        "sexual_minors": 0.00020992734296664648,
+        "harassment": 0.0006656335368081451,
+        "hate": 0.00010817152527255935,
+        "self_harm": 0.00045598608581835884,
+        "violence": 0.0005005862322300009,
+        "violence_graphic": 3.373722476473661e-06
+      },
+      "openai_flags": {
+        "sexual": false,
+        "sexual_minors": false,
+        "harassment": false,
+        "hate": false,
+        "self_harm": false,
+        "violence": false,
+        "violence_graphic": false
+      }
+    },
+    {
+      "level": "EXPLICITE MODÉRÉ",
+      "message": "envie de sexe ce soir",
+      "openai_sexual_score": 0.3806421319357583,
+      "openai_sexual_flag": false,
+      "openai_score_10": 3.806421319357583,
+      "keywords_score": 9.5,
+      "final_score": 9.5,
+      "detected": true,
+      "openai_categories": {
+        "sexual": 0.3806421319357583,
+        "sexual_minors": 0.0001796149154900369,
+        "harassment": 0.0006638298048243978,
+        "hate": 5.27478412523148e-05,
+        "self_harm": 1.647465607888151e-05,
+        "violence": 0.000565024317150732,
+        "violence_graphic": 3.8831109868779005e-06
+      },
+      "openai_flags": {
+        "sexual": false,
+        "sexual_minors": false,
+        "harassment": false,
+        "hate": false,
+        "self_harm": false,
+        "violence": false,
+        "violence_graphic": false
+      }
+    },
+    {
+      "level": "TRÈS EXPLICITE",
+      "message": "qui veut baiser maintenant?",
+      "openai_sexual_score": 0.5688571649659854,
+      "openai_sexual_flag": false,
+      "openai_score_10": 5.6885716496598535,
+      "keywords_score": 9.5,
+      "final_score": 9.5,
+      "detected": true,
+      "openai_categories": {
+        "sexual": 0.5688571649659854,
+        "sexual_minors": 0.00023967308701289605,
+        "harassment": 0.006087083276922458,
+        "hate": 9.697519677825862e-05,
+        "self_harm": 0.00045386232796869417,
+        "violence": 0.0005873034565397543,
+        "violence_graphic": 3.2192334497037803e-06
+      },
+      "openai_flags": {
+        "sexual": false,
+        "sexual_minors": false,
+        "harassment": false,
+        "hate": false,
+        "self_harm": false,
+        "violence": false,
+        "violence_graphic": false
+      }
+    },
+    {
+      "level": "TRÈS EXPLICITE",
+      "message": "j'ai envie de te faire l'amour",
+      "openai_sexual_score": 0.5776172165679166,
+      "openai_sexual_flag": false,
+      "openai_score_10": 5.776172165679166,
+      "keywords_score": 0.0,
+      "final_score": 5.776172165679166,
+      "detected": true,
+      "openai_categories": {
+        "sexual": 0.5776172165679166,
+        "sexual_minors": 0.00015011822567369918,
+        "harassment": 0.000804042571983639,
+        "hate": 6.771942330385674e-05,
+        "self_harm": 0.0004909779660391795,
+        "violence": 0.0005508471799444582,
+        "violence_graphic": 2.7535691114583474e-06
+      },
+      "openai_flags": {
+        "sexual": false,
+        "sexual_minors": false,
+        "harassment": false,
+        "hate": false,
+        "self_harm": false,
+        "violence": false,
+        "violence_graphic": false
+      }
+    },
+    {
+      "level": "TRÈS EXPLICITE",
+      "message": "cherche mec pour plan cul",
+      "openai_sexual_score": 0.019428067455041397,
+      "openai_sexual_flag": false,
+      "openai_score_10": 0.19428067455041398,
+      "keywords_score": 10.0,
+      "final_score": 10.0,
+      "detected": true,
+      "openai_categories": {
+        "sexual": 0.019428067455041397,
+        "sexual_minors": 4.802972318863164e-05,
+        "harassment": 0.0006904040885326254,
+        "hate": 0.00011513995656772139,
+        "self_harm": 0.0004706276972958211,
+        "violence": 0.0005323933551511255,
+        "violence_graphic": 4.400118457925303e-06
+      },
+      "openai_flags": {
+        "sexual": false,
+        "sexual_minors": false,
+        "harassment": false,
+        "hate": false,
+        "self_harm": false,
+        "violence": false,
+        "violence_graphic": false
+      }
+    },
+    {
+      "level": "EXTRÊMEMENT EXPLICITE",
+      "message": "salut les filles qui a envie de ma bite?",
+      "openai_sexual_score": 0.3987332835441325,
+      "openai_sexual_flag": false,
+      "openai_score_10": 3.9873328354413253,
+      "keywords_score": 9.5,
+      "final_score": 9.5,
+      "detected": true,
+      "openai_categories": {
+        "sexual": 0.3987332835441325,
+        "sexual_minors": 0.00055982486146599,
+        "harassment": 0.006030830296237823,
+        "hate": 0.007200823403173291,
+        "self_harm": 0.0004737802338585972,
+        "violence": 0.0005702096923869237,
+        "violence_graphic": 6.814872211615988e-06
+      },
+      "openai_flags": {
+        "sexual": false,
+        "sexual_minors": false,
+        "harassment": false,
+        "hate": false,
+        "self_harm": false,
+        "violence": false,
+        "violence_graphic": false
+      }
+    },
+    {
+      "level": "EXTRÊMEMENT EXPLICITE",
+      "message": "cherche femme pour sexe hard et brutal",
+      "openai_sexual_score": 0.9234380752156843,
+      "openai_sexual_flag": true,
+      "openai_score_10": 9.234380752156843,
+      "keywords_score": 9.5,
+      "final_score": 9.5,
+      "detected": true,
+      "openai_categories": {
+        "sexual": 0.9234380752156843,
+        "sexual_minors": 0.00011879054941163418,
+        "harassment": 0.0195801091899223,
+        "hate": 0.007847114132620332,
+        "self_harm": 0.0005339847006422489,
+        "violence": 0.3547878271136421,
+        "violence_graphic": 0.0015772972381523178
+      },
+      "openai_flags": {
+        "sexual": true,
+        "sexual_minors": false,
+        "harassment": false,
+        "hate": false,
+        "self_harm": false,
+        "violence": true,
+        "violence_graphic": false
+      }
+    },
+    {
+      "level": "EXTRÊMEMENT EXPLICITE",
+      "message": "qui veut voir mes parties intimes?",
+      "openai_sexual_score": 0.2091011534694475,
+      "openai_sexual_flag": false,
+      "openai_score_10": 2.091011534694475,
+      "keywords_score": 6.0,
+      "final_score": 6.0,
+      "detected": true,
+      "openai_categories": {
+        "sexual": 0.2091011534694475,
+        "sexual_minors": 0.0004645557549716042,
+        "harassment": 0.008725425154698513,
+        "hate": 0.0012203438230545093,
+        "self_harm": 1.5236754767429125e-05,
+        "violence": 0.0005893550335994887,
+        "violence_graphic": 1.5118199327273332e-05
+      },
+      "openai_flags": {
+        "sexual": false,
+        "sexual_minors": false,
+        "harassment": false,
+        "hate": false,
+        "self_harm": false,
+        "violence": false,
+        "violence_graphic": false
+      }
+    }
+  ],
+  "openai_detections": 9,
+  "keywords_detections": 11,
+  "threshold_analysis": {}
+}

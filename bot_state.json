@@ -1,0 +1,21 @@
+{
+  "timestamp": "2025-09-14T23:09:55.602119",
+  "version": "3.0",
+  "user_violations": {
+    "Ennuie4748": {
+      "warnings": [
+        "2025-09-14T23:08:18.025767"
+      ],
+      "kicks": [],
+      "violations_by_type": {
+        "violence": [
+          "2025-09-14T23:08:18.025719"
+        ]
+      }
+    }
+  },
+  "stats": {
+    "total_saves": 1,
+    "last_save": "2025-09-14T23:09:55.602144"
+  }
+}

@@ -1,27 +1,27 @@
-# 🐒 AlphaBaboon - Bot de Modération IRC
+# 🤖 IRC Moderation Bot - Bot de Modération IRC
 
-**Bot de modération automatique 100% autonome** pour la communauté Baboon qui surveille le canal #francophonie sur irc.baboon.fr. 
+**Bot de modération automatique 100% autonome** qui surveille les canaux IRC et gère automatiquement le contenu inapproprié. 
 
 ## 🎯 Qu'est-ce que ce bot ?
 
-AlphaBaboon est un **modérateur IRC intelligent** qui :
+Ce bot est un **modérateur IRC intelligent** qui :
 
-✨ **Analyse automatiquement** tous les messages sur #francophonie  
-🔍 **Détecte le contenu adulte/sexuel** avec l'IA d'OpenAI  
-🚀 **Déplace poliment** les utilisateurs vers #adultes  
+✨ **Analyse automatiquement** tous les messages des canaux surveillés  
+🔍 **Détecte le contenu inapproprié** avec l'IA d'OpenAI  
+🚀 **Déplace poliment** les utilisateurs vers les canaux appropriés  
 🆓 **Coût zéro** grâce à l'API Moderation gratuite d'OpenAI  
 ⚡ **Performance optimale** avec cache intelligent et détection rapide  
 
 ### 🎭 Comment ça marche ?
 
-1. **Surveillance** : Le bot écoute tous les messages sur #francophonie
-2. **Analyse IA** : Chaque message est analysé pour détecter du contenu adulte
-3. **Action sympathique** : Si détecté → message d'explication + déplacement vers #adultes
-4. **Accueil** : Message d'accueil personnalisé sur #adultes selon l'heure
+1. **Surveillance** : Le bot écoute tous les messages des canaux configurés
+2. **Analyse IA** : Chaque message est analysé pour détecter du contenu inapproprié
+3. **Action sympathique** : Si détecté → message d'explication + déplacement vers le canal approprié
+4. **Accueil** : Message d'accueil personnalisé selon l'heure
 
-### 💡 Pourquoi AlphaBaboon ?
+### 💡 Pourquoi ce bot ?
 
-- **🛡️ Protection** : Garde #francophonie familial et accueillant
+- **🛡️ Protection** : Garde vos canaux familiaux et accueillants
 - **😊 Bienveillant** : Messages toujours sympathiques et accueillants  
 - **🔄 Intelligent** : Apprend des messages répétitifs (cache)
 - **👥 Respectueux** : Whitelist pour les admins/modérateurs
@@ -40,7 +40,7 @@ AlphaBaboon est un **modérateur IRC intelligent** qui :
 ### Prérequis
 - Python 3.8+
 - Clé API OpenAI
-- Accès au serveur IRC irc.baboon.fr
+- Accès à un serveur IRC
 
 ### Installation des dépendances
 ```bash
@@ -62,9 +62,9 @@ pip install -r requirements.txt
      "irc": {
        "ircop_login": "votre_login_ircop",
        "ircop_password": "votre_password_ircop",
-       "channels": ["#francophonie", "#adultes"],
-       "monitored_channel": "#francophonie",
-       "redirect_channel": "#adultes",
+       "channels": ["#general", "#offtopic"],
+       "monitored_channel": "#general",
+       "redirect_channel": "#offtopic",
        "is_ircop": true,
        "preferred_server_index": 0
      },
@@ -82,12 +82,12 @@ pip install -r requirements.txt
      "irc": {
        "servers": [
          {
-           "hostname": "irc.baboon.fr",
+           "hostname": "irc.votre-serveur.com",
            "port": 6667,
            "ssl": false
          },
          {
-           "hostname": "irc.baboon.fr", 
+           "hostname": "irc.votre-serveur.com", 
            "port": 6697,
            "ssl": true
          }
@@ -101,8 +101,8 @@ pip install -r requirements.txt
 3. **Personnaliser les canaux** (optionnel)
    
    Dans `config_secret.json`, vous pouvez modifier :
-   - `monitored_channel` : canal à surveiller (défaut: "#francophonie")
-   - `redirect_channel` : canal de redirection (défaut: "#adultes")
+   - `monitored_channel` : canal à surveiller (ex: "#general")
+   - `redirect_channel` : canal de redirection (ex: "#offtopic")
    - `channels` : liste des canaux à rejoindre
    - `preferred_server_index` : serveur préféré (0 = premier de la liste)
 
@@ -141,7 +141,7 @@ pip install -r requirements.txt
 
 ### **Méthode 1 : Démarrage simple**
 ```bash
-# Dans le dossier alphaBaboon
+# Dans le dossier du bot
 python alphababoon.py
 ```
 
@@ -164,16 +164,16 @@ pkill -f alphababoon.py
 
 ### **Méthode 4 : Avec systemd (recommandé pour serveur)**
 
-Créer le fichier `/etc/systemd/system/alphababoon.service` :
+Créer le fichier `/etc/systemd/system/ircbot.service` :
 ```ini
 [Unit]
-Description=AlphaBaboon IRC Bot
+Description=IRC Moderation Bot
 After=network.target
 
 [Service]
 Type=simple
 User=votre_user
-WorkingDirectory=/chemin/vers/alphaBaboon
+WorkingDirectory=/chemin/vers/le/bot
 ExecStart=/usr/bin/python3 alphababoon.py
 Restart=always
 RestartSec=10
@@ -185,20 +185,20 @@ WantedBy=multi-user.target
 Puis :
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable alphababoon
-sudo systemctl start alphababoon
-sudo systemctl status alphababoon
+sudo systemctl enable ircbot
+sudo systemctl start ircbot
+sudo systemctl status ircbot
 ```
 
 ### **🛑 Arrêt propre**
 - `Ctrl+C` pour un arrêt propre en mode interactif
-- `sudo systemctl stop alphababoon` avec systemd
+- `sudo systemctl stop ircbot` avec systemd
 - Le bot sauvegarde son état et ferme les connexions correctement
 
 ### **📊 Surveillance**
 ```bash
 # Voir les logs principaux
-tail -f logs/alphababoon.log
+tail -f bot.log
 
 # Voir les actions de modération  
 tail -f logs/moderation.log
@@ -253,7 +253,7 @@ Le bot utilise ses **privilèges IRCop** pour un nettoyage efficace et sympathiq
 ## 📊 Logs et Surveillance
 
 ### Fichiers de logs créés automatiquement :
-- `logs/alphababoon.log` - Log principal avec rotation
+- `bot.log` - Log principal avec rotation
 - `logs/errors.log` - Erreurs uniquement  
 - `logs/moderation.log` - Actions de modération
 - `logs/irc_stats.log` - Statistiques IRC
@@ -283,10 +283,10 @@ tail -f logs/irc_stats.log
 ### Bot ne se connecte pas
 ```bash
 # Vérifier la configuration IRC
-ping irc.baboon.fr
+ping votre-serveur-irc.com
 
 # Vérifier les logs
-tail -f logs/alphababoon.log
+tail -f bot.log
 ```
 
 ### Erreurs OpenAI
@@ -302,7 +302,7 @@ tail -f logs/alphababoon.log
 ## 📋 Structure du Projet
 
 ```
-alphaBaboon/
+irc-moderation-bot/
 ├── config.json                    # Configuration publique (à versionner)
 ├── config_secret.json             # Configuration secrète (non versionnée)
 ├── config_secret.json.example     # Modèle de configuration secrète
@@ -338,8 +338,8 @@ Pour les problèmes techniques :
 1. Vérifier les logs dans `logs/`
 2. S'assurer que la configuration est correcte
 3. Tester la connectivité IRC et OpenAI
-4. Contacter l'équipe Baboon si problème persistant
+4. Consulter la documentation ou créer une issue GitHub
 
 ---
 
-**AlphaBaboon v1.0** - Bot de modération automatique pour la communauté Baboon 🐒
+**IRC Moderation Bot v1.0** - Bot de modération automatique pour serveurs IRC 🤖
