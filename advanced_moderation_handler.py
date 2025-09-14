@@ -56,7 +56,7 @@ class AdvancedModerationHandler:
             'sexual/minors': 1.0,  # Tolérance zéro
             'harassment': 4.0,
             'harassment/threatening': 2.0,
-            'hate': 3.5,
+            'hate': 4.5,
             'hate/threatening': 2.0,
             'violence': 5.0,
             'violence/graphic': 4.0,
@@ -258,7 +258,10 @@ class AdvancedModerationHandler:
                 
         else:
             # Violations légères = warning puis redirection
-            if len(user_history.warnings) == 0:
+            # EXCEPTION: Contenu sexuel sur #francophonie = déplacement immédiat
+            if 'sexual' in result.violation_types and channel == "#francophonie":
+                self._redirect_to_adultes(user, channel, irc_client)
+            elif len(user_history.warnings) == 0:
                 self._apply_warning(user, channel, irc_client, result)
             else:
                 if 'sexual' in result.violation_types and channel != "#adultes":

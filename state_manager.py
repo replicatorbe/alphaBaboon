@@ -172,6 +172,7 @@ class StateManager:
             timestamp_str = state_data.get('timestamp')
             if timestamp_str:
                 try:
+                    from datetime import datetime
                     timestamp = datetime.fromisoformat(timestamp_str)
                     age_hours = (datetime.now() - timestamp).total_seconds() / 3600
                     

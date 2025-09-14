@@ -195,8 +195,8 @@ class IRCClient(irc.bot.SingleServerIRCBot):
             def unban_user():
                 if self.connected:
                     self.connection.send_raw(f"MODE {self.monitored_channel} -b {user}!*@*")
-                    self.logger.info(f"Ban temporaire levé pour {user} sur {self.monitored_channel}")
-            threading.Timer(30.0, unban_user).start()  # Déban après 30 secondes
+                    self.logger.info(f"Ban temporaire levé pour {user} sur {self.monitored_channel} (après 10 minutes)")
+            threading.Timer(600.0, unban_user).start()  # Déban après 10 minutes
             
             self.logger.info(f"SAPART {user} de {self.monitored_channel} puis SAJOIN vers {self.redirect_channel}")
             return True
