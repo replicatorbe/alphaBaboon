@@ -1,0 +1,172 @@
+{
+  "total_tests": 18,
+  "openai_higher": 0,
+  "keywords_higher": 0,
+  "similar_scores": 18,
+  "false_negatives": [],
+  "false_positives": [],
+  "details": [
+    {
+      "level": "TRÈS EXPLICITE",
+      "message": "salut les filles qui veut baiser avec moi ce soir?",
+      "keywords": 9.5,
+      "openai_approx": 9.5,
+      "final": 9.5,
+      "detected": true,
+      "difference": 0.0
+    },
+    {
+      "level": "TRÈS EXPLICITE",
+      "message": "cherche femme pour sexe rapide, j'ai une grosse bite",
+      "keywords": 10.0,
+      "openai_approx": 10.0,
+      "final": 10.0,
+      "detected": true,
+      "difference": 0.0
+    },
+    {
+      "level": "TRÈS EXPLICITE",
+      "message": "qui pour plan cul maintenant? envoyez photos nues",
+      "keywords": 9.5,
+      "openai_approx": 9.5,
+      "final": 9.5,
+      "detected": true,
+      "difference": 0.0
+    },
+    {
+      "level": "EXPLICITE FRANÇAIS",
+      "message": "je cherche un plan Q envyer moi mesage et nude au 06 27 66 70 78",
+      "keywords": 8.0,
+      "openai_approx": 8.0,
+      "final": 8.0,
+      "detected": true,
+      "difference": 0.0
+    },
+    {
+      "level": "EXPLICITE FRANÇAIS",
+      "message": "actif du 59 dispo pour plan cul ce soir",
+      "keywords": 10.0,
+      "openai_approx": 10.0,
+      "final": 10.0,
+      "detected": true,
+      "difference": 0.0
+    },
+    {
+      "level": "EXPLICITE FRANÇAIS",
+      "message": "passif cherche mec bien monté pour du sexe",
+      "keywords": 9.5,
+      "openai_approx": 9.5,
+      "final": 9.5,
+      "detected": true,
+      "difference": 0.0
+    },
+    {
+      "level": "DRAGUE FRANÇAISE SUBTILE",
+      "message": "genre d'actif du nord dispo maintenant",
+      "keywords": 9.0,
+      "openai_approx": 9.0,
+      "final": 9.0,
+      "detected": true,
+      "difference": 0.0
+    },
+    {
+      "level": "DRAGUE FRANÇAISE SUBTILE",
+      "message": "cherche contact féminin pour moments intimes",
+      "keywords": 6.0,
+      "openai_approx": 6.0,
+      "final": 6.0,
+      "detected": true,
+      "difference": 0.0
+    },
+    {
+      "level": "DRAGUE FRANÇAISE SUBTILE",
+      "message": "ça te dit de passer un bon moment ensemble en privé?",
+      "keywords": 7.5,
+      "openai_approx": 7.5,
+      "final": 7.5,
+      "detected": true,
+      "difference": 0.0
+    },
+    {
+      "level": "EUPHÉMISMES",
+      "message": "viens chez moi on sera tranquilles tous les deux",
+      "keywords": 0.0,
+      "openai_approx": 0.6538789286781949,
+      "final": 0.6538789286781949,
+      "detected": false,
+      "difference": -0.6538789286781949
+    },
+    {
+      "level": "EUPHÉMISMES",
+      "message": "tu habites où? j'aimerais te rencontrer discrètement",
+      "keywords": 6.5,
+      "openai_approx": 6.5,
+      "final": 6.5,
+      "detected": true,
+      "difference": 0.0
+    },
+    {
+      "level": "EUPHÉMISMES",
+      "message": "mp moi si tu veux qu'on se rapproche physiquement",
+      "keywords": 7.0,
+      "openai_approx": 7.0,
+      "final": 7.0,
+      "detected": true,
+      "difference": 0.0
+    },
+    {
+      "level": "LIMITE / AMBIGU",
+      "message": "cherche compagnie pour ce soir",
+      "keywords": 0.0,
+      "openai_approx": 0.029447453270126094,
+      "final": 0.029447453270126094,
+      "detected": false,
+      "difference": -0.029447453270126094
+    },
+    {
+      "level": "LIMITE / AMBIGU",
+      "message": "quelqu'un de libre pour discussion privée?",
+      "keywords": 0.0,
+      "openai_approx": 0.028261078542871534,
+      "final": 0.028261078542871534,
+      "detected": false,
+      "difference": -0.028261078542871534
+    },
+    {
+      "level": "LIMITE / AMBIGU",
+      "message": "envie de faire de nouvelles rencontres",
+      "keywords": 0.0,
+      "openai_approx": 0.10327781932783636,
+      "final": 0.10327781932783636,
+      "detected": false,
+      "difference": -0.10327781932783636
+    },
+    {
+      "level": "INNOCENT",
+      "message": "salut tout le monde, comment allez-vous?",
+      "keywords": 0.0,
+      "openai_approx": 0.001064962672055945,
+      "final": 0.001064962672055945,
+      "detected": false,
+      "difference": -0.001064962672055945
+    },
+    {
+      "level": "INNOCENT",
+      "message": "quelqu'un connaît un bon restaurant dans le 75?",
+      "keywords": 0.0,
+      "openai_approx": 0.0002066298248838341,
+      "final": 0.0002066298248838341,
+      "detected": false,
+      "difference": -0.0002066298248838341
+    },
+    {
+      "level": "INNOCENT",
+      "message": "qui regarde le match ce soir?",
+      "keywords": 0.0,
+      "openai_approx": 0.0005033355754528114,
+      "final": 0.0005033355754528114,
+      "detected": false,
+      "difference": -0.0005033355754528114
+    }
+  ]
+}

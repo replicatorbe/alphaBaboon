@@ -1,0 +1,36 @@
+{
+  "irc": {
+    "servers": [
+      {
+        "hostname": "irc.baboon.fr",
+        "port": 6667,
+        "ssl": false
+      },
+      {
+        "hostname": "irc.baboon.fr", 
+        "port": 6697,
+        "ssl": true
+      }
+    ],
+    "nickname": "AlphaBaboon",
+    "realname": "Modérateur automatique Baboon",
+    "connect_timeout": 30,
+    "retry_delay": 60
+  },
+  "openai": {
+    "use_moderation_api": true,
+    "moderation_model": "omni-moderation-latest"
+  },
+  "moderation": {
+    "sensitivity": 3,
+    "reset_hours": 24,
+    "cooldown_minutes": 2,
+    "move_delay_seconds": 3,
+    "welcome_delay_seconds": 5
+  },
+  "phone_moderation": {
+    "warning_threshold": 1,
+    "ban_duration_hours": 24,
+    "violation_reset_hours": 48
+  }
+}
