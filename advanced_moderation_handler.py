@@ -25,6 +25,10 @@ class UserViolationHistory:
     warnings: List[datetime]
     kicks: List[datetime]
     violations_by_type: Dict[str, List[datetime]]
+    
+    def __len__(self):
+        """Retourne le nombre total de violations."""
+        return len(self.warnings) + len(self.kicks)
 
 
 class AdvancedModerationHandler:
@@ -172,6 +176,10 @@ class AdvancedModerationHandler:
                     
                     # Sur #adultes, ignorer les violations sexuelles, violence et harassment (contexte adulte)
                     if channel == "#adultes" and category_name in ['sexual', 'sexual/minors', 'violence', 'violence/graphic', 'harassment', 'harassment/threatening']:
+                        continue
+                    
+                    # Ignorer harassment partout (trop de faux positifs)
+                    if category_name in ['harassment', 'harassment/threatening']:
                         continue
                     
                     if score >= threshold or is_flagged:
