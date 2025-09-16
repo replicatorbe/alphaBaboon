@@ -137,6 +137,16 @@ class AdvancedModerationHandler:
     def _analyze_with_all_criteria(self, message: str, sender: str, channel: str = "#francophonie") -> ModerationResult:
         """Analyse un message avec tous les critères OpenAI disponibles."""
         try:
+            # Exceptions pour éviter les faux positifs
+            message_lower = message.lower()
+            if 'kick moi' in message_lower or 'kicke moi' in message_lower or 'kick-moi' in message_lower:
+                return ModerationResult(
+                    is_violation=False,
+                    violation_types=[],
+                    confidence_score=0.0,
+                    severity_level=0,
+                    reason="Exception: demande de kick autorisée"
+                )
             # Utiliser l'API Moderation d'OpenAI
             moderation_response = self.content_analyzer.client.moderations.create(
                 input=message,
