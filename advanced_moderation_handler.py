@@ -62,7 +62,7 @@ class AdvancedModerationHandler:
             'harassment/threatening': 2.0,
             'hate': 4.5,
             'hate/threatening': 2.0,
-            'violence': 5.0,
+            'violence': 6.0,
             'violence/graphic': 4.0,
             'illicit': 4.5,
             'illicit/violent': 3.0,
