@@ -44,7 +44,7 @@ class ContentAnalyzer:
                 r'\bsex[eo]?\b', r'\bbais[eé]r\b', r'\bbaisais\b', r'\bbite\b', r'\bchatte\b', 
                 r'\bseins?\b', r'\bnichons?\b', r'\bvagina?\b', r'\bpénis\b',
                 r'\borgasme\b', r'\bjouir\b', r'\bmasturbation\b', r'\bérection\b',
-                r'\bsodomie\b', r'\bfellation\b', r'\bcunnilingus\b', r'\bporn\b',
+                r'\bsodomie\b', r'\bfellation\b', r'\bcunnilingus\b', r'\bcunni\b', r'\bporn\b',
                 r'\bqueue\b', r'\bcul\b', r'\bbranler?\b', r'\btailler?\b.*\bpipe\b'
             ],
             'suggestive': [
@@ -56,7 +56,7 @@ class ContentAnalyzer:
             'drague_rencontre': [
                 # Patterns existants
                 r'\bmatter\b.*\b(femmes?|mecs?|gens?)\b', r'\bdrague\b', r'\bactif\b.*\bprivé\b',
-                r'\bcam\b', r'\bweb\s*cam\b', r'\bcamerka\b', r'\bbc?am\b',
+                r'\bweb\s*cam\b', r'\bcamerka\b', r'\bbc?am\b',
                 r'\bplan\s*cul\b', r'\bplan\s*q\b', r'\brdv\b.*\b(sexe?|coquin)\b',
                 r'\brencontre\b.*\b(sexe?|adulte|coquin|hot)\b',
                 r'\bcherche\b.*\b(femme|mec|partenaire)\b.*\b(sexe?|plan|cam)\b',
@@ -340,13 +340,10 @@ class ContentAnalyzer:
                 r'\bça\s+me\s+ferait\s+plaisir\s+de\b.*\b(te\s+connaître|discuter)\b'
             ],
             
-            # Contexte relationnel suspect
+            # Contexte relationnel suspect (patterns plus spécifiques)
             'relationship_context': [
-                r'\b(célibataire|seul[es]?|libre)\b.*\b(cherche|envie|besoin)\b',
-                r'\ben\s+manque\s+de\b.*\b(compagnie|affection|contact)\b',
-                r'\bbesoin\s+de\b.*\b(parler|contact|présence)\b',
-                r'\bme\s+sens\s+(seul[es]?|isolé[es]?)\b',
-                r"\bcherche\s+quelqu['']un\s+pour\b.*\b(parler|sortir|compagnie)\b"
+                r'\b(célibataire|seul[es]?|libre)\b.*\b(cherche|envie|besoin)\b.*\b(sexe|plan|cam|rencontre)\b',
+                r'\ben\s+manque\s+de\b.*\b(compagnie|affection|contact)\b.*\b(sexe|plan|cam)\b'
             ]
         }
         
@@ -635,7 +632,7 @@ class ContentAnalyzer:
                 word_counts[word] = word_counts.get(word, 0) + 1
         
         # Mots suspects répétés
-        suspicious_words = ['dispo', 'actif', 'passif', 'cam', 'privé', 'snap', 'plan', 'cherche', 'rencontre']
+        suspicious_words = ['dispo', 'actif', 'passif', 'privé', 'snap', 'plan', 'cherche', 'rencontre']
         repetition_score = 0.0
         
         for word, count in word_counts.items():
