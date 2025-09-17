@@ -216,8 +216,8 @@ class AdvancedModerationHandler:
                     if channel == "#adultes" and category_name in ['sexual', 'sexual/minors', 'violence', 'violence/graphic', 'harassment', 'harassment/threatening']:
                         continue
                     
-                    # Ignorer harassment partout (trop de faux positifs)
-                    if category_name in ['harassment', 'harassment/threatening']:
+                    # Ignorer harassment et violence partout (trop de faux positifs)
+                    if category_name in ['harassment', 'harassment/threatening', 'violence', 'violence/graphic']:
                         continue
                     
                     if score >= threshold or is_flagged:
