@@ -147,6 +147,25 @@ class AdvancedModerationHandler:
                     severity_level=0,
                     reason="Exception: demande de kick autorisée"
                 )
+            if 'tu viens d\'où' in message_lower or 'tu viens d ou' in message_lower:
+                return ModerationResult(
+                    is_violation=False,
+                    violation_types=[],
+                    confidence_score=0.0,
+                    severity_level=0,
+                    reason="Exception: question géographique autorisée"
+                )
+            # Exception pour références d'âge innocentes
+            import re
+            age_pattern = r'\b(à|a)\s+\d{1,2}\s+ans?\b'
+            if re.search(age_pattern, message_lower) and len(message.split()) <= 6:
+                return ModerationResult(
+                    is_violation=False,
+                    violation_types=[],
+                    confidence_score=0.0,
+                    severity_level=0,
+                    reason="Exception: référence d'âge simple autorisée"
+                )
             # Utiliser l'API Moderation d'OpenAI
             moderation_response = self.content_analyzer.client.moderations.create(
                 input=message,
