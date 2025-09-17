@@ -166,6 +166,15 @@ class AdvancedModerationHandler:
                     severity_level=0,
                     reason="Exception: référence d'âge simple autorisée"
                 )
+            # Exception pour photos d'animaux
+            if 'tete de' in message_lower and any(animal in message_lower for animal in ['chat', 'chien', 'animal', 'chats', 'chiens']):
+                return ModerationResult(
+                    is_violation=False,
+                    violation_types=[],
+                    confidence_score=0.0,
+                    severity_level=0,
+                    reason="Exception: photo d'animal autorisée"
+                )
             # Utiliser l'API Moderation d'OpenAI
             moderation_response = self.content_analyzer.client.moderations.create(
                 input=message,
@@ -440,3 +449,26 @@ class AdvancedModerationHandler:
             'violation_types': list(user_history.violations_by_type.keys()),
             'last_action': self.last_action.get(user)
         }
+
+    def clear_user_history(self, user: str):
+        """Vide complètement l'historique d'un utilisateur (remet le compteur à 0)."""
+        if user in self.user_violations:
+            del self.user_violations[user]
+        if user in self.last_action:
+            del self.last_action[user]
+        self.logger.info(f"Historique vidé pour l'utilisateur {user}")
+
+    def clear_all_history(self):
+        """Vide complètement tous les historiques (remet tous les compteurs à 0)."""
+        self.user_violations.clear()
+        self.last_action.clear()
+        self.logger.info("Tous les historiques de violations ont été vidés")
+
+    def clear_bans_on_startup(self, irc_client, channel="#francophonie"):
+        """Vide toutes les bans au démarrage du bot."""
+        try:
+            # Envoyer la commande pour vider la banlist
+            irc_client.connection.send_raw(f"MODE {channel} -b")
+            self.logger.info(f"Banlist vidée au démarrage pour {channel}")
+        except Exception as e:
+            self.logger.error(f"Erreur lors du vidage de la banlist: {e}")

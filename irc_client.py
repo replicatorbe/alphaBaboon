@@ -76,6 +76,11 @@ class IRCClient(irc.bot.SingleServerIRCBot):
         self.connected = True
         self.reconnect_attempts = 0
         
+        # Vider les banlists au démarrage
+        if hasattr(self, 'moderation_handler') and self.moderation_handler:
+            for channel in self.bot_channels:
+                self.moderation_handler.clear_bans_on_startup(self, channel)
+        
         # Démarrer le keepalive
         self._start_keepalive()
 
