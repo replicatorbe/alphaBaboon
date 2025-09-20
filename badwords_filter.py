@@ -70,9 +70,10 @@ class BadWordsFilter:
             " couille "
         ]
         
-        # Compiler les patterns regex pour une détection efficace
+        # Pré-compiler tous les patterns regex pour une détection ultra-rapide
         self.compiled_patterns = []
-        self._compile_patterns()
+        self.pattern_cache = {}  # Cache pour éviter recompilation
+        self._compile_patterns_optimized()
         
         # Configuration du filtre
         filter_config = config.get('badwords_filter', {})
@@ -105,23 +106,74 @@ class BadWordsFilter:
         self.logger.info(f"Filtre de mots interdits {status} avec {len(self.badwords)} patterns sur {self.monitored_channels}")
         self.logger.info(f"Sanctions: 1ère violation=avertissement, 2ème=kick, 3ème=ban {self.ban_duration_minutes}min (reset {self.violation_reset_hours}h)")
 
-    def _compile_patterns(self):
-        """Compile les patterns en expressions régulières."""
+    def _compile_patterns_optimized(self):
+        """Compile les patterns en expressions régulières optimisées."""
+        compilation_start = time.time()
+        compiled_count = 0
+        
+        # Grouper les patterns par type pour optimisation
+        wildcard_patterns = []
+        exact_patterns = []
+        
         for pattern in self.badwords:
+            if '*' in pattern:
+                wildcard_patterns.append(pattern)
+            else:
+                exact_patterns.append(pattern)
+        
+        # Compiler les patterns avec wildcards
+        for pattern in wildcard_patterns:
             try:
-                if '*' in pattern:
+                if pattern in self.pattern_cache:
+                    compiled = self.pattern_cache[pattern]
+                else:
                     # Pattern avec wildcards : * devient .*? (non-greedy)
                     escaped = re.escape(pattern).replace('\\*', '.*?')
-                else:
-                    # Pattern exact (avec espaces) : recherche exacte
-                    escaped = re.escape(pattern)
+                    compiled = re.compile(escaped, re.IGNORECASE | re.UNICODE)
+                    self.pattern_cache[pattern] = compiled
                 
-                # Compiler avec flags pour ignorer la casse et accents
-                compiled = re.compile(escaped, re.IGNORECASE | re.UNICODE)
                 self.compiled_patterns.append((pattern, compiled))
+                compiled_count += 1
                 
             except re.error as e:
-                self.logger.warning(f"Pattern invalide '{pattern}': {e}")
+                self.logger.warning(f"Pattern wildcard invalide '{pattern}': {e}")
+        
+        # Compiler les patterns exactes - optimisation : un seul regex pour tous
+        if exact_patterns:
+            try:
+                # Créer un pattern combiné pour les recherches exactes (plus rapide)
+                escaped_exact = [re.escape(p) for p in exact_patterns]
+                combined_pattern = '|'.join(f'({escaped})' for escaped in escaped_exact)
+                combined_regex = re.compile(combined_pattern, re.IGNORECASE | re.UNICODE)
+                
+                # Ajouter chaque pattern individuel pour le reporting
+                for pattern in exact_patterns:
+                    escaped = re.escape(pattern)
+                    compiled = re.compile(escaped, re.IGNORECASE | re.UNICODE)
+                    self.compiled_patterns.append((pattern, compiled))
+                    compiled_count += 1
+                
+                # Stocker le regex combiné pour usage futur si besoin
+                self.combined_exact_regex = combined_regex
+                
+            except re.error as e:
+                self.logger.warning(f"Erreur compilation patterns exacts: {e}")
+                # Fallback : compilation individuelle
+                for pattern in exact_patterns:
+                    try:
+                        escaped = re.escape(pattern)
+                        compiled = re.compile(escaped, re.IGNORECASE | re.UNICODE)
+                        self.compiled_patterns.append((pattern, compiled))
+                        compiled_count += 1
+                    except re.error as pe:
+                        self.logger.warning(f"Pattern exact invalide '{pattern}': {pe}")
+        
+        compilation_time = time.time() - compilation_start
+        self.logger.info(f"Optimisation regex: {compiled_count} patterns compilés en {compilation_time:.3f}s")
+    
+    def _compile_patterns(self):
+        """Ancienne méthode - gardée pour compatibilité."""
+        return self._compile_patterns_optimized()
 
     def check_message(self, message: str, sender: str) -> Tuple[bool, Optional[str]]:
         """

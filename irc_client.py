@@ -6,6 +6,7 @@ import logging
 import time
 from threading import Timer
 from badwords_filter import BadWordsFilter
+from nickname_filter import NicknameFilter
 
 # Configure encoding error handling for IRC
 import irc.client
@@ -15,31 +16,27 @@ import jaraco.stream.buffer
 def patch_irc_encoding():
     """Patch IRC library to handle encoding errors more gracefully."""
     try:
-        # Override jaraco.stream.buffer to use 'replace' error handling
-        original_buffer_init = jaraco.stream.buffer.Buffer.__init__
-        
-        def robust_buffer_init(self, *args, **kwargs):
-            original_buffer_init(self, *args, **kwargs)
-            # Force encoding error handling to 'replace' instead of 'strict'
-            self.errors = 'replace'
-        
-        jaraco.stream.buffer.Buffer.__init__ = robust_buffer_init
-        
-        # Also try to set default encoding for IRC connections
-        if hasattr(irc.client, 'ServerConnection'):
-            original_connect = irc.client.ServerConnection.connect
+        # Simple and safe approach: just catch UnicodeDecodeError in the reactor
+        if hasattr(irc.client, 'Reactor'):
+            original_process_data = irc.client.Reactor.process_data
             
-            def robust_connect(self, *args, **kwargs):
-                result = original_connect(self, *args, **kwargs)
-                # Try to set buffer encoding after connection
-                if hasattr(self, 'socket') and hasattr(self.socket, 'buffer'):
-                    try:
-                        self.socket.buffer.errors = 'replace'
-                    except:
-                        pass
-                return result
+            def robust_process_data(self, sockets):
+                """Process data with UTF-8 error handling."""
+                try:
+                    return original_process_data(self, sockets)
+                except UnicodeDecodeError as e:
+                    # Log the error and continue
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.warning(f"Erreur d'encodage UTF-8 gérée automatiquement: {e}")
+                    # Return empty to continue processing
+                    return
+                    
+            irc.client.Reactor.process_data = robust_process_data
+            print("✅ Encodage IRC: Patch Reactor.process_data pour gestion des erreurs UTF-8")
             
-            irc.client.ServerConnection.connect = robust_connect
+        # Note: ServerConnection.process_data patch removed - causes signature mismatch
+        # The Reactor.process_data patch above is sufficient for UTF-8 error handling
             
     except Exception as e:
         print(f"Avertissement: Impossible de patcher l'encodage IRC: {e}")
@@ -66,6 +63,9 @@ class IRCClient(irc.bot.SingleServerIRCBot):
         
         # Initialiser le filtre de mots interdits
         self.badwords_filter = BadWordsFilter(config)
+        
+        # Initialiser le filtre de pseudos inappropriés
+        self.nickname_filter = NicknameFilter(config)
         
         # Récupérer les canaux depuis la config fusionnée (renommer pour éviter conflit avec IRC lib)
         self.bot_channels = config['irc'].get('channels', ['#francophonie', '#adultes'])
@@ -108,23 +108,20 @@ class IRCClient(irc.bot.SingleServerIRCBot):
     def _configure_encoding_handling(self):
         """Configure more robust encoding handling for IRC connections."""
         try:
-            # Override the default encoding error handling
-            # Set to 'replace' to replace invalid characters instead of crashing
-            if hasattr(self.connection, 'buffer') and hasattr(self.connection.buffer, 'errors'):
-                self.connection.buffer.errors = 'replace'
-                self.logger.info("Configuration d'encodage: mode 'replace' activé")
-            else:
-                # Fallback: patch the buffer class if needed
-                original_init = jaraco.stream.buffer.Buffer.__init__
-                
-                def patched_init(buffer_self, *args, **kwargs):
-                    original_init(buffer_self, *args, **kwargs)
-                    buffer_self.errors = 'replace'  # Use 'replace' instead of 'strict'
-                
-                jaraco.stream.buffer.Buffer.__init__ = patched_init
-                self.logger.info("Configuration d'encodage: patch Buffer appliqué")
+            # The global patches handle UnicodeDecodeError at the reactor and connection level
+            self.logger.info("Configuration d'encodage: Patches de gestion des erreurs UTF-8 actifs")
+            
+            # Additional safety: try to set connection-level encoding if possible
+            if hasattr(self, 'connection') and self.connection:
+                try:
+                    if hasattr(self.connection, 'buffer') and hasattr(self.connection.buffer, 'errors'):
+                        self.connection.buffer.errors = 'replace'
+                        self.logger.debug("Configuration d'encodage: mode 'replace' appliqué à la connexion")
+                except:
+                    pass  # Ignore if not possible
+                    
         except Exception as e:
-            self.logger.warning(f"Impossible de configurer l'encodage: {e}")
+            self.logger.debug(f"Configuration d'encodage additionnelle ignorée: {e}")
 
     def on_welcome(self, connection, event):
         server_info = f"{connection.server}:{connection.port}"
@@ -168,6 +165,16 @@ class IRCClient(irc.bot.SingleServerIRCBot):
                     self.logger.info(f"Privilèges OP demandés sur {channel} avec samode")
             else:
                 self.logger.info(f"Utilisateur {user} rejoint {channel}")
+                
+                # Vérifier le pseudo si c'est sur #francophonie
+                if self.nickname_filter.is_enabled_for_channel(channel):
+                    is_inappropriate, detected_pattern = self.nickname_filter.check_nickname(user)
+                    if is_inappropriate:
+                        self.logger.warning(f"Pseudo inapproprié détecté: {user} sur {channel} ({detected_pattern})")
+                        # Rediriger l'utilisateur vers #adultes
+                        self.nickname_filter.handle_inappropriate_nickname(self, user, channel, detected_pattern)
+                        return  # Arrêter le traitement pour cet utilisateur
+                
         except Exception as e:
             self.logger.error(f"Erreur dans on_join: {e}")
             import traceback
@@ -362,3 +369,9 @@ class IRCClient(irc.bot.SingleServerIRCBot):
         if hasattr(self, 'badwords_filter'):
             return self.badwords_filter.get_stats()
         return {"error": "Filtre de mots interdits non initialisé"}
+    
+    def get_nickname_stats(self):
+        """Retourne les statistiques du filtre de pseudos."""
+        if hasattr(self, 'nickname_filter'):
+            return self.nickname_filter.get_stats()
+        return {"error": "Filtre de pseudos non initialisé"}

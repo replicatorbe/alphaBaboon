@@ -265,11 +265,17 @@ class AlphaBaboonBot:
             badwords_detections = badwords_stats.get('detections_count', 0)
             badwords_bans = badwords_stats.get('banned_users_count', 0)
             
+            # Statistiques du filtre de pseudos
+            nickname_stats = self.irc_client.get_nickname_stats() if self.irc_client else {}
+            nickname_detections = nickname_stats.get('detections_count', 0)
+            nickname_redirects = nickname_stats.get('redirected_users_count', 0)
+            
             # Rapport de santé
             health_report = self.health_checker.get_health_report() if self.health_checker else {"overall_health": "Unknown"}
             
             self.logger.info(f"Stats: {active_users} users, {total_violations} violations IA, "
-                           f"{badwords_detections} détections mots interdits, {badwords_bans} bans mots, "
+                           f"{badwords_detections} détections mots, {badwords_bans} bans mots, "
+                           f"{nickname_detections} pseudos inappropriés, {nickname_redirects} redirections, "
                            f"Cache: {cache_stats.get('hit_rate_percent', 0)}% hit rate, "
                            f"Économies: ${cache_stats.get('total_savings_usd', 0)}, "
                            f"Santé: {'OK' if health_report['overall_health'] else 'PROBLÈME'}")
