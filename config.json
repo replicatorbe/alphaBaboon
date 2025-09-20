@@ -32,5 +32,12 @@
     "warning_threshold": 1,
     "ban_duration_hours": 24,
     "violation_reset_hours": 48
+  },
+  "badwords_filter": {
+    "enabled": true,
+    "channels": ["#francophonie"],
+    "immediate_ban": true,
+    "send_warning_message": true,
+    "log_detections": true
   }
 }
