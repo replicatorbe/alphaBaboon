@@ -204,6 +204,21 @@ class AlphaBaboonBot:
         """Exécute le client IRC dans un thread séparé."""
         try:
             self.irc_client.start()
+        except UnicodeDecodeError as e:
+            self.logger.error(f"Erreur d'encodage dans le client IRC: {e}")
+            self.logger.info("Tentative de redémarrage automatique du client IRC...")
+            # Attendre un peu avant de redémarrer
+            import time
+            time.sleep(10)
+            if self.running:
+                # Redémarrer le client IRC automatiquement
+                try:
+                    from irc_client import IRCClient
+                    self.irc_client = IRCClient(self.config, self.moderation_handler)
+                    self._run_irc_client()
+                except Exception as restart_error:
+                    self.logger.error(f"Impossible de redémarrer le client IRC: {restart_error}")
+                    self.running = False
         except Exception as e:
             self.logger.error(f"Erreur dans le client IRC: {e}")
             import traceback
@@ -245,10 +260,16 @@ class AlphaBaboonBot:
             # Statistiques du cache
             cache_stats = self.moderation_handler.content_analyzer.get_cache_stats()
             
+            # Statistiques du filtre de mots interdits
+            badwords_stats = self.irc_client.get_badwords_stats() if self.irc_client else {}
+            badwords_detections = badwords_stats.get('detections_count', 0)
+            badwords_bans = badwords_stats.get('banned_users_count', 0)
+            
             # Rapport de santé
             health_report = self.health_checker.get_health_report() if self.health_checker else {"overall_health": "Unknown"}
             
-            self.logger.info(f"Stats: {active_users} users, {total_violations} violations, "
+            self.logger.info(f"Stats: {active_users} users, {total_violations} violations IA, "
+                           f"{badwords_detections} détections mots interdits, {badwords_bans} bans mots, "
                            f"Cache: {cache_stats.get('hit_rate_percent', 0)}% hit rate, "
                            f"Économies: ${cache_stats.get('total_savings_usd', 0)}, "
                            f"Santé: {'OK' if health_report['overall_health'] else 'PROBLÈME'}")

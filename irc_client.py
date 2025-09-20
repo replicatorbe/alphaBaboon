@@ -5,6 +5,47 @@ import ssl
 import logging
 import time
 from threading import Timer
+from badwords_filter import BadWordsFilter
+
+# Configure encoding error handling for IRC
+import irc.client
+import jaraco.stream.buffer
+
+# Global configuration to handle encoding errors more gracefully
+def patch_irc_encoding():
+    """Patch IRC library to handle encoding errors more gracefully."""
+    try:
+        # Override jaraco.stream.buffer to use 'replace' error handling
+        original_buffer_init = jaraco.stream.buffer.Buffer.__init__
+        
+        def robust_buffer_init(self, *args, **kwargs):
+            original_buffer_init(self, *args, **kwargs)
+            # Force encoding error handling to 'replace' instead of 'strict'
+            self.errors = 'replace'
+        
+        jaraco.stream.buffer.Buffer.__init__ = robust_buffer_init
+        
+        # Also try to set default encoding for IRC connections
+        if hasattr(irc.client, 'ServerConnection'):
+            original_connect = irc.client.ServerConnection.connect
+            
+            def robust_connect(self, *args, **kwargs):
+                result = original_connect(self, *args, **kwargs)
+                # Try to set buffer encoding after connection
+                if hasattr(self, 'socket') and hasattr(self.socket, 'buffer'):
+                    try:
+                        self.socket.buffer.errors = 'replace'
+                    except:
+                        pass
+                return result
+            
+            irc.client.ServerConnection.connect = robust_connect
+            
+    except Exception as e:
+        print(f"Avertissement: Impossible de patcher l'encodage IRC: {e}")
+
+# Apply the patch immediately when module is imported
+patch_irc_encoding()
 
 
 class IRCClient(irc.bot.SingleServerIRCBot):
@@ -19,6 +60,12 @@ class IRCClient(irc.bot.SingleServerIRCBot):
         realname = config['irc']['realname']
         
         super().__init__(servers, nickname, realname)
+        
+        # Configure encoding error handling to be more tolerant
+        self._configure_encoding_handling()
+        
+        # Initialiser le filtre de mots interdits
+        self.badwords_filter = BadWordsFilter(config)
         
         # Récupérer les canaux depuis la config fusionnée (renommer pour éviter conflit avec IRC lib)
         self.bot_channels = config['irc'].get('channels', ['#francophonie', '#adultes'])
@@ -57,6 +104,27 @@ class IRCClient(irc.bot.SingleServerIRCBot):
             self.logger.info(f"Serveur configuré: {hostname}:{port} ({ssl_status})")
         
         return servers
+
+    def _configure_encoding_handling(self):
+        """Configure more robust encoding handling for IRC connections."""
+        try:
+            # Override the default encoding error handling
+            # Set to 'replace' to replace invalid characters instead of crashing
+            if hasattr(self.connection, 'buffer') and hasattr(self.connection.buffer, 'errors'):
+                self.connection.buffer.errors = 'replace'
+                self.logger.info("Configuration d'encodage: mode 'replace' activé")
+            else:
+                # Fallback: patch the buffer class if needed
+                original_init = jaraco.stream.buffer.Buffer.__init__
+                
+                def patched_init(buffer_self, *args, **kwargs):
+                    original_init(buffer_self, *args, **kwargs)
+                    buffer_self.errors = 'replace'  # Use 'replace' instead of 'strict'
+                
+                jaraco.stream.buffer.Buffer.__init__ = patched_init
+                self.logger.info("Configuration d'encodage: patch Buffer appliqué")
+        except Exception as e:
+            self.logger.warning(f"Impossible de configurer l'encodage: {e}")
 
     def on_welcome(self, connection, event):
         server_info = f"{connection.server}:{connection.port}"
@@ -111,9 +179,24 @@ class IRCClient(irc.bot.SingleServerIRCBot):
             message = event.arguments[0] if event.arguments else ""
             sender = event.source.nick if hasattr(event.source, 'nick') else str(event.source)
             
+            # Ignorer les messages du bot lui-même
+            if sender == self.config['irc']['nickname']:
+                return
+            
             # Analyser les messages des canaux de modération
             if channel in [self.monitored_channel, self.redirect_channel]:
                 self.logger.info(f"[{channel}] <{sender}> {message}")
+                
+                # 1. D'abord vérifier avec le filtre de mots interdits (plus rapide)
+                if self.badwords_filter.is_enabled_for_channel(channel):
+                    is_badword, detected_pattern = self.badwords_filter.check_message(message, sender)
+                    if is_badword:
+                        # Gestion progressive pour mot interdit
+                        self.logger.warning(f"Mot interdit détecté de {sender} sur {channel}: {detected_pattern}")
+                        self.badwords_filter.handle_violation(self, sender, channel, detected_pattern)
+                        return  # Ne pas passer à l'analyse IA si violation traitée
+                
+                # 2. Ensuite passer à l'analyse IA si pas de mot interdit détecté
                 self.moderation_handler.analyze_message(sender, message, channel, self)
             else:
                 # Log les autres canaux sans analyser
@@ -273,3 +356,9 @@ class IRCClient(irc.bot.SingleServerIRCBot):
             self.logger.debug(f"PONG reçu en {response_time:.2f}s")
         else:
             self.logger.debug("PONG reçu")
+    
+    def get_badwords_stats(self):
+        """Retourne les statistiques du filtre de mots interdits."""
+        if hasattr(self, 'badwords_filter'):
+            return self.badwords_filter.get_stats()
+        return {"error": "Filtre de mots interdits non initialisé"}
