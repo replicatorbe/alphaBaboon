@@ -368,6 +368,33 @@ class BadWordsFilter:
             'temp_banned_users': list(self.banned_users_temp.keys()),
             'users_with_warnings': {user: count for user, count in self.user_warnings.items() if count > 0}
         }
+    
+    def get_user_stats(self, username: str) -> dict:
+        """Retourne les statistiques d'un utilisateur spécifique."""
+        username = username.lower()
+        self._clean_old_violations(username)
+        
+        # Vérifier si temporairement banni
+        is_temp_banned = self._is_user_temp_banned(username)
+        
+        return {
+            'username': username,
+            'violation_count': self.user_warnings.get(username, 0),
+            'is_banned': username in self.banned_users,
+            'is_temp_banned': is_temp_banned,
+            'temp_ban_until': self.banned_users_temp.get(username, 0) if is_temp_banned else None,
+            'recent_violations': len(self.user_violations.get(username, []))
+        }
+    
+    def get_stats_summary(self) -> dict:
+        """Retourne un résumé des statistiques pour l'admin."""
+        stats = self.get_stats()
+        return {
+            'users_with_violations': len([u for u in stats['users_with_warnings'] if stats['users_with_warnings'][u] > 0]),
+            'total_detections': stats['detections_count'],
+            'banned_users': stats['banned_users_count'],
+            'temp_banned_users': stats['temp_banned_users_count']
+        }
 
     def add_pattern(self, pattern: str):
         """Ajoute un nouveau pattern à la liste."""
