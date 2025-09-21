@@ -83,7 +83,7 @@ class HostResolver:
         
         if host:
             # Ban par host: plus efficace car couvre les changements de pseudo
-            ban_mask = f"*!*@{host}"
+            ban_mask = f"*@{host}"
             self.logger.info(f"Ban mask pour {username}: {ban_mask} (par host)")
             return ban_mask
         else:
@@ -114,7 +114,7 @@ class HostResolver:
             return {
                 'username': username,
                 'host': None,
-                'ban_mask': f"{username}!*@*",
+                'ban_mask': f"*@{username}",
                 'has_host': False,
                 'error': str(e)
             }
@@ -185,6 +185,6 @@ if __name__ == "__main__":
     
     # Simuler des infos
     resolver._cache_host("TestUser", "example.com")
-    print(f"Ban mask: {resolver.get_ban_mask(None, '#test', 'TestUser')}")
+    print(f"Ban mask: {resolver.get_ban_mask(None, '#test', 'TestUser')}")  # Devrait afficher *@example.com
     print(f"Stats: {resolver.get_cache_stats()}")
     print("HostResolver test OK")
