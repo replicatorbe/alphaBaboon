@@ -334,7 +334,7 @@ class AdminCommands:
             
             # Si on a un host, essayer aussi l'ancien format par sécurité
             if user_info.get('has_host'):
-                fallback_unban = f"samode {channel} -b {username}!*@*"
+                fallback_unban = f"samode {channel} -b *@{username}"
                 irc_client.connection.send_raw(fallback_unban)
                 unban_type = "par host + fallback pseudo"
             else:
