@@ -7,6 +7,8 @@ from content_analyzer import ContentAnalyzer
 from message_rotator import MessageRotator
 from phone_moderator import PhoneModerator
 from drug_detector import DrugDetector
+from privilege_checker import PrivilegeChecker
+from baboon_vocabulary import baboon_vocab
 
 
 @dataclass
@@ -45,6 +47,7 @@ class AdvancedModerationHandler:
         self.message_rotator = MessageRotator(config)
         self.phone_moderator = PhoneModerator(config)
         self.drug_detector = DrugDetector(config)
+        self.privilege_checker = PrivilegeChecker(config)
         
         # Historique des violations par utilisateur
         self.user_violations: Dict[str, UserViolationHistory] = {}
@@ -97,14 +100,14 @@ class AdvancedModerationHandler:
             'self-harm/instructions': 3
         }
         
-        # Messages par type de violation
+        # Messages par type de violation (avec vocabulaire Baboon)
         self.violation_messages = {
-            'sexual': "🐒 @{user}, ce genre de discussion c'est plutôt sur #adultes ! 😊",
-            'harassment': "⚠️ @{user}, restons courtois entre nous !",
-            'hate': "❌ @{user}, pas de messages haineux ici s'il te plaît.",
-            'violence': "🚫 @{user}, évitez les contenus violents sur ce canal.",
-            'illicit': "🚔 @{user}, les références aux substances illégales ne sont pas autorisées ici.",
-            'self-harm': "💜 @{user}, si tu as besoin d'aide, n'hésite pas à contacter quelqu'un."
+            'sexual': "🐒 @{user}, ce genre de bavardage c'est plutôt sur la tribu #adultes ! 😊",
+            'harassment': "⚠️ @{user}, restons courtois entre babouins !",
+            'hate': "❌ @{user}, pas de gros mots de singe ici s'il te plaît.",
+            'violence': "🚫 @{user}, évitez les comportements violents dans notre tribu.",
+            'illicit': "🚔 @{user}, les références aux substances de la jungle ne sont pas autorisées ici.",
+            'self-harm': "💜 @{user}, si tu as besoin d'aide, n'hésite pas à contacter un chef de la tribu."
         }
         
         # Dernière action par utilisateur pour éviter le spam
@@ -113,6 +116,11 @@ class AdvancedModerationHandler:
     def analyze_message(self, sender: str, message: str, channel: str, irc_client):
         """Analyse avancée d'un message avec tous les critères OpenAI."""
         try:
+            # 0. Vérifier d'abord si l'utilisateur est exempté (op/halfop/voice)
+            if self.privilege_checker.is_exempt_from_moderation(irc_client, channel, sender):
+                self.privilege_checker.log_privilege_check(irc_client, channel, sender, "EXEMPTION_MODERATION")
+                return  # Pas de modération pour les privilégiés
+            
             # 1. Vérifier les numéros de téléphone (priorité)
             has_phone, phone_action = self.phone_moderator.check_phone_numbers(message, sender, channel)
             if has_phone and phone_action and phone_action['action'] != 'none':
@@ -387,8 +395,9 @@ class AdvancedModerationHandler:
         """Applique un kick."""
         self.user_violations[user].kicks.append(datetime.now())
         
-        kick_reason = f"2ème violation: {', '.join(result.violation_types)}"
-        irc_client.privmsg(channel, f"⚠️ @{user}, 2ème avertissement = kick temporaire.")
+        kick_reason = f"2ème bêtise: {', '.join(result.violation_types)}"
+        baboon_message = baboon_vocab.get_action_message('kick', user, kick_reason)
+        irc_client.privmsg(channel, baboon_message)
         
         import threading
         def delayed_kick():
@@ -408,8 +417,9 @@ class AdvancedModerationHandler:
 
     def _apply_ban(self, user: str, channel: str, irc_client, result: ModerationResult):
         """Applique un ban pour violations graves."""
-        ban_reason = f"Violation grave: {', '.join(result.violation_types)}"
-        irc_client.privmsg(channel, f"🚫 @{user}, violation grave détectée.")
+        ban_reason = f"Bêtise grave: {', '.join(result.violation_types)}"
+        baboon_message = baboon_vocab.get_action_message('ban', user, ban_reason)
+        irc_client.privmsg(channel, baboon_message)
         
         import threading
         def delayed_ban():
