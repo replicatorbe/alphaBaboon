@@ -224,7 +224,7 @@ class BaboonVocabulary:
             "!status <babouin>, !clear <babouin>, !stats, !health, !reload, "
             "!whitelist <add/remove> <babouin>, !blacklist <add/remove> <babouin>, "
             "!badword <add/remove> <gros mot>, !ban <babouin>, !unban <babouin>, "
-            "!kick <babouin>, !phonestats"
+            "!kick <babouin>, !phonestats, !hostinfo <babouin>"
         )
     
     def get_error_message(self, error_type: str = "generic") -> str:

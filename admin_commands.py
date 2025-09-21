@@ -12,6 +12,7 @@ import json
 import traceback
 from privilege_checker import PrivilegeChecker
 from baboon_vocabulary import baboon_vocab
+from host_resolver import HostResolver
 
 
 class AdminCommands:
@@ -27,6 +28,7 @@ class AdminCommands:
         self.nickname_filter = nickname_filter
         self.logger = logging.getLogger(__name__)
         self.privilege_checker = PrivilegeChecker(config)
+        self.host_resolver = HostResolver(config)
         
         # Commandes disponibles et leurs descriptions
         self.commands = {
@@ -42,7 +44,8 @@ class AdminCommands:
             'ban': self._cmd_ban,
             'unban': self._cmd_unban,
             'kick': self._cmd_kick,
-            'phonestats': self._cmd_phonestats
+            'phonestats': self._cmd_phonestats,
+            'hostinfo': self._cmd_hostinfo
         }
         
         # Cache des statuts utilisateur pour optimisation
@@ -274,35 +277,87 @@ class AdminCommands:
             return f"❌ Erreur: {str(e)}"
     
     def _cmd_ban(self, irc_client, channel: str, sender: str, args: list) -> str:
-        """Ban un utilisateur."""
+        """Ban un utilisateur par host (*@host) pour plus d'efficacité."""
         if not args:
-            return "❌ Usage: !ban <username> [raison]"
+            return baboon_vocab.get_error_message('invalid_usage') + " Usage: !ban <babouin> [raison]"
         
         username = args[0]
         reason = " ".join(args[1:]) if len(args) > 1 else f"Banni par {sender}"
         
         try:
-            ban_command = f"samode {channel} +b {username}!*@*"
+            # Récupérer le masque de ban optimal (*@host si possible)
+            ban_mask = self.host_resolver.get_ban_mask(irc_client, channel, username)
+            user_info = self.host_resolver.get_user_full_info(irc_client, channel, username)
+            
+            # Appliquer le ban avec le masque optimal
+            ban_command = f"samode {channel} +b {ban_mask}"
             irc_client.connection.send_raw(ban_command)
-            self.logger.warning(f"Ban manuel: {username} par {sender} - Raison: {reason}")
-            return baboon_vocab.get_action_message('ban', username, f"par l'Alpha {sender}")
+            
+            # Log détaillé avec informations host
+            ban_detail = {
+                'username': username,
+                'ban_mask': ban_mask,
+                'has_host': user_info.get('has_host', False),
+                'host': user_info.get('host', 'N/A'),
+                'banned_by': sender,
+                'reason': reason
+            }
+            self.logger.warning(f"🔨 BAN APPLIED: {ban_detail}")
+            
+            # Message de retour avec info sur le type de ban
+            ban_type = "par host" if user_info.get('has_host') else "par pseudo"
+            response = baboon_vocab.get_action_message('ban', username, f"par l'Alpha {sender}")
+            response += f" (Ban {ban_type}: {ban_mask})"
+            
+            return response
+            
         except Exception as e:
-            return f"❌ Erreur ban: {str(e)}"
+            error_detail = f"Erreur ban {username}: {str(e)}"
+            self.logger.error(error_detail)
+            return baboon_vocab.get_error_message('command_error') + f" {str(e)}"
     
     def _cmd_unban(self, irc_client, channel: str, sender: str, args: list) -> str:
-        """Unban un utilisateur."""
+        """Unban un utilisateur (essaie les deux formats: host et pseudo)."""
         if not args:
-            return "❌ Usage: !unban <username>"
+            return baboon_vocab.get_error_message('invalid_usage') + " Usage: !unban <babouin>"
         
         username = args[0]
         
         try:
-            unban_command = f"samode {channel} -b {username}!*@*"
+            # Essayer d'unban avec le host d'abord (plus efficace)
+            user_info = self.host_resolver.get_user_full_info(irc_client, channel, username)
+            ban_mask = user_info.get('ban_mask', f"{username}!*@*")
+            
+            # Unban avec le masque détecté
+            unban_command = f"samode {channel} -b {ban_mask}"
             irc_client.connection.send_raw(unban_command)
-            self.logger.info(f"Unban manuel: {username} par {sender}")
-            return baboon_vocab.get_action_message('unban', username, f"par l'Alpha {sender}")
+            
+            # Si on a un host, essayer aussi l'ancien format par sécurité
+            if user_info.get('has_host'):
+                fallback_unban = f"samode {channel} -b {username}!*@*"
+                irc_client.connection.send_raw(fallback_unban)
+                unban_type = "par host + fallback pseudo"
+            else:
+                unban_type = "par pseudo"
+            
+            # Log détaillé
+            unban_detail = {
+                'username': username,
+                'unban_mask': ban_mask,
+                'unban_type': unban_type,
+                'unbanned_by': sender
+            }
+            self.logger.info(f"✅ UNBAN APPLIED: {unban_detail}")
+            
+            response = baboon_vocab.get_action_message('unban', username, f"par l'Alpha {sender}")
+            response += f" ({unban_type})"
+            
+            return response
+            
         except Exception as e:
-            return f"❌ Erreur unban: {str(e)}"
+            error_detail = f"Erreur unban {username}: {str(e)}"
+            self.logger.error(error_detail)
+            return baboon_vocab.get_error_message('command_error') + f" {str(e)}"
     
     def _cmd_kick(self, irc_client, channel: str, sender: str, args: list) -> str:
         """Kick un utilisateur."""
@@ -331,6 +386,32 @@ class AdminCommands:
             return response
         else:
             return "❌ Module téléphone non disponible"
+    
+    def _cmd_hostinfo(self, irc_client, channel: str, sender: str, args: list) -> str:
+        """Affiche les informations host d'un utilisateur pour debug."""
+        if not args:
+            return baboon_vocab.get_error_message('invalid_usage') + " Usage: !hostinfo <babouin>"
+        
+        username = args[0]
+        
+        try:
+            user_info = self.host_resolver.get_user_full_info(irc_client, channel, username)
+            cache_stats = self.host_resolver.get_cache_stats()
+            
+            response = f"🐒🔍 Info host pour {username}: "
+            response += f"Host: {user_info.get('host', 'Inconnu')}, "
+            response += f"Masque ban: {user_info.get('ban_mask', 'N/A')}, "
+            response += f"Host détecté: {'✅' if user_info.get('has_host') else '❌'}"
+            
+            if user_info.get('cache_age') is not None:
+                response += f", Cache âge: {user_info['cache_age']}s"
+            
+            response += f" | Cache total: {cache_stats['total_cached']} hosts"
+            
+            return response
+            
+        except Exception as e:
+            return baboon_vocab.get_error_message('command_error') + f" {str(e)}"
 
 
 if __name__ == "__main__":
