@@ -48,8 +48,8 @@ class PhoneNumberDetector:
             # Numéros fixes collés: 0123456789
             r'0[1-5]\d{8}',
             
-            # Numéros spéciaux courts: 3615, 3617, etc.
-            r'36\d{2}',
+            # Numéros spéciaux courts: 3615, 3617, 3618, 3620, etc. (liste restrictive)
+            r'\b36(?:15|17|18|20|24|28|29)\b',
             
             # Format international autre pays: +XX XXXXXXXXX
             r'\+\d{2,3}\s*\d{6,12}'
@@ -101,6 +101,14 @@ class PhoneNumberDetector:
 
     def _is_exception(self, number: str, full_text: str, start: int, end: int) -> bool:
         """Vérifie si le numéro détecté est en fait une exception (année, heure, etc.)."""
+        
+        # Vérifier si le numéro fait partie d'un pseudonyme (entouré de lettres/chiffres)
+        if start > 0 and full_text[start-1].isalnum():
+            # Il y a une lettre ou un chiffre juste avant le numéro
+            if end < len(full_text) and full_text[end].isalnum():
+                # Il y a aussi une lettre ou un chiffre juste après
+                self.logger.debug(f"Exception pseudonyme détectée: '{number}' fait partie d'un nom d'utilisateur")
+                return True
         
         # Vérifier contre les patterns d'exception sur le numéro seul
         for exception_pattern in self.exception_patterns:
