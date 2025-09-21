@@ -68,7 +68,7 @@ class AdvancedModerationHandler:
         
         # Seuils de sensibilité par catégorie (score sur 10)
         self.category_thresholds = {
-            'sexual': 3.0,
+            'sexual': 4.0,
             'sexual/minors': 2.5,  # Seuil ajusté pour éviter les faux positifs
             'harassment': 4.0,
             'harassment/threatening': 2.0,

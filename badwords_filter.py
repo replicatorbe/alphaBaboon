@@ -423,3 +423,26 @@ class BadWordsFilter:
     def is_enabled_for_channel(self, channel: str) -> bool:
         """Vérifie si le filtre est activé pour ce canal."""
         return self.enabled and channel in self.monitored_channels
+
+    def reset_user_violations(self, username: str) -> bool:
+        """Remet à zéro les violations d'un utilisateur (commande admin)."""
+        username_lower = username.lower()
+        
+        # Reset violations récentes
+        if username_lower in self.user_violations:
+            del self.user_violations[username_lower]
+        
+        # Reset compteur d'avertissements
+        if username_lower in self.user_warnings:
+            del self.user_warnings[username_lower]
+        
+        # Supprimer des bans temporaires si applicable
+        if username_lower in self.banned_users_temp:
+            del self.banned_users_temp[username_lower]
+        
+        # Supprimer des bans permanents si applicable
+        if username_lower in self.banned_users:
+            self.banned_users.remove(username_lower)
+        
+        self.logger.info(f"Violations reset pour {username}")
+        return True
