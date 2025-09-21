@@ -37,8 +37,9 @@ class AdvancedModerationHandler:
     Système 2-strikes : warning puis kick/ban.
     """
     
-    def __init__(self, config):
+    def __init__(self, config, timing_config=None):
         self.config = config
+        self.timing_config = timing_config
         self.logger = logging.getLogger(__name__)
         self.content_analyzer = ContentAnalyzer(config)
         self.message_rotator = MessageRotator(config)
@@ -48,16 +49,24 @@ class AdvancedModerationHandler:
         # Historique des violations par utilisateur
         self.user_violations: Dict[str, UserViolationHistory] = {}
         
-        # Configuration
-        self.reset_hours = config['moderation']['reset_hours']
-        self.cooldown_minutes = config['moderation']['cooldown_minutes']
-        self.move_delay = config['moderation'].get('move_delay_seconds', 3)
-        self.welcome_delay = config['moderation'].get('welcome_delay_seconds', 5)
+        # Configuration avec timings configurables
+        if timing_config:
+            mod_settings = timing_config.get_moderation_settings()
+            self.reset_hours = mod_settings['reset_hours']
+            self.cooldown_minutes = mod_settings['cooldown_minutes']
+            self.move_delay = mod_settings['move_delay_seconds']
+            self.welcome_delay = mod_settings['welcome_delay_seconds']
+        else:
+            # Fallback vers config traditionnelle
+            self.reset_hours = config['moderation']['reset_hours']
+            self.cooldown_minutes = config['moderation']['cooldown_minutes']
+            self.move_delay = config['moderation'].get('move_delay_seconds', 3)
+            self.welcome_delay = config['moderation'].get('welcome_delay_seconds', 5)
         
         # Seuils de sensibilité par catégorie (score sur 10)
         self.category_thresholds = {
             'sexual': 3.0,
-            'sexual/minors': 1.0,  # Tolérance zéro
+            'sexual/minors': 2.5,  # Seuil ajusté pour éviter les faux positifs
             'harassment': 4.0,
             'harassment/threatening': 2.0,
             'hate': 4.5,
@@ -128,11 +137,31 @@ class AdvancedModerationHandler:
             moderation_result = self._analyze_with_all_criteria(message, sender, channel)
             
             if moderation_result.is_violation:
-                self.logger.warning(f"Violation détectée de {sender}: {moderation_result.violation_types} (score: {moderation_result.confidence_score})")
+                # Log détaillé de la violation avec contexte
+                violation_detail = {
+                    'user': sender,
+                    'channel': channel,
+                    'violation_types': moderation_result.violation_types,
+                    'confidence_score': round(moderation_result.confidence_score, 2),
+                    'severity_level': moderation_result.severity_level,
+                    'reason': moderation_result.reason,
+                    'message_preview': message[:50] + '...' if len(message) > 50 else message
+                }
+                self.logger.warning(f"🚨 VIOLATION: {violation_detail}")
                 self._handle_moderation_violation(sender, channel, irc_client, moderation_result)
                 
         except Exception as e:
-            self.logger.error(f"Erreur lors de l'analyse du message de {sender}: {e}")
+            # Log détaillé des erreurs avec stack trace
+            import traceback
+            error_detail = {
+                'user': sender,
+                'channel': channel,
+                'error': str(e),
+                'message_length': len(message),
+                'message_preview': message[:100] + '...' if len(message) > 100 else message,
+                'stack_trace': traceback.format_exc()
+            }
+            self.logger.error(f"❌ ERREUR ANALYSE: {error_detail}")
 
     def _analyze_with_all_criteria(self, message: str, sender: str, channel: str = "#francophonie") -> ModerationResult:
         """Analyse un message avec tous les critères OpenAI disponibles."""
@@ -252,7 +281,17 @@ class AdvancedModerationHandler:
                 drug_summary = self.drug_detector.get_detection_summary(drug_elements)
                 reason += f" (Patterns FR: {drug_summary})"
             
-            self.logger.info(f"Analyse complète - {sender}: violations={violations}, score={max_score:.1f}, sévérité={max_severity}")
+            # Log détaillé de l'analyse
+            analysis_detail = {
+                'user': sender,
+                'channel': channel,
+                'violations': violations,
+                'confidence_score': round(max_score, 2),
+                'severity_level': max_severity,
+                'openai_categories_checked': len(category_mapping),
+                'drug_detected': is_drug_related if 'is_drug_related' in locals() else False
+            }
+            self.logger.info(f"📊 ANALYSE: {analysis_detail}")
             
             return ModerationResult(
                 is_violation=is_violation,
@@ -333,7 +372,16 @@ class AdvancedModerationHandler:
         warning_message = message_template.format(user=user)
         
         irc_client.privmsg(channel, warning_message)
-        self.logger.warning(f"Avertissement donné à {user} pour {result.violation_types}")
+        # Log détaillé de l'action
+        action_detail = {
+            'action': 'WARNING',
+            'user': user,
+            'channel': channel,
+            'violation_types': result.violation_types,
+            'total_warnings': len(self.user_violations[user].warnings),
+            'message_sent': warning_message[:100] + '...' if len(warning_message) > 100 else warning_message
+        }
+        self.logger.warning(f"⚠️ ACTION: {action_detail}")
 
     def _apply_kick(self, user: str, channel: str, irc_client, result: ModerationResult):
         """Applique un kick."""
@@ -345,7 +393,16 @@ class AdvancedModerationHandler:
         import threading
         def delayed_kick():
             irc_client.connection.kick(channel, user, kick_reason)
-            self.logger.warning(f"Kick appliqué à {user} pour {result.violation_types}")
+            # Log détaillé du kick
+            action_detail = {
+                'action': 'KICK',
+                'user': user,
+                'channel': channel,
+                'violation_types': result.violation_types,
+                'total_kicks': len(self.user_violations[user].kicks),
+                'reason': kick_reason
+            }
+            self.logger.warning(f"👢 ACTION: {action_detail}")
         
         threading.Timer(2.0, delayed_kick).start()
 
@@ -358,7 +415,16 @@ class AdvancedModerationHandler:
         def delayed_ban():
             irc_client.connection.send_raw(f"MODE {channel} +b {user}!*@*")
             irc_client.connection.kick(channel, user, ban_reason)
-            self.logger.error(f"Ban appliqué à {user} pour {result.violation_types}")
+            # Log détaillé du ban
+            action_detail = {
+                'action': 'BAN',
+                'user': user,
+                'channel': channel,
+                'violation_types': result.violation_types,
+                'severity_level': result.severity_level,
+                'reason': ban_reason
+            }
+            self.logger.error(f"🔨 ACTION: {action_detail}")
         
         threading.Timer(2.0, delayed_ban).start()
 

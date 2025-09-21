@@ -7,6 +7,7 @@ import time
 from threading import Timer
 from badwords_filter import BadWordsFilter
 from nickname_filter import NicknameFilter
+from admin_commands import AdminCommands
 
 # Configure encoding error handling for IRC
 import irc.client
@@ -66,6 +67,9 @@ class IRCClient(irc.bot.SingleServerIRCBot):
         
         # Initialiser le filtre de pseudos inappropriés
         self.nickname_filter = NicknameFilter(config)
+        
+        # Initialiser le système de commandes admin
+        self.admin_commands = AdminCommands(config, moderation_handler, self.badwords_filter, self.nickname_filter)
         
         # Récupérer les canaux depuis la config fusionnée (renommer pour éviter conflit avec IRC lib)
         self.bot_channels = config['irc'].get('channels', ['#francophonie', '#adultes'])
@@ -194,7 +198,11 @@ class IRCClient(irc.bot.SingleServerIRCBot):
             if channel in [self.monitored_channel, self.redirect_channel]:
                 self.logger.info(f"[{channel}] <{sender}> {message}")
                 
-                # 1. D'abord vérifier avec le filtre de mots interdits (plus rapide)
+                # 0. D'abord vérifier si c'est une commande admin
+                if self.admin_commands.handle_command(self, channel, sender, message):
+                    return  # Commande admin traitée, arrêter le traitement
+                
+                # 1. Ensuite vérifier avec le filtre de mots interdits (plus rapide)
                 if self.badwords_filter.is_enabled_for_channel(channel):
                     is_badword, detected_pattern = self.badwords_filter.check_message(message, sender)
                     if is_badword:
