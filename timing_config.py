@@ -4,7 +4,7 @@ Configuration centralisée des timings pour AlphaBaboon.
 Rend configurables toutes les constantes de temps hardcodées.
 """
 
-from typing import Dict, Any
+from typing import Dict, Any, List
 import logging
 
 
