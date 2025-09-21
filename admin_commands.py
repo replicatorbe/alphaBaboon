@@ -163,7 +163,7 @@ class AdminCommands:
             self.moderation_handler.phone_moderator.reset_user_violations(username)
         
         self.logger.info(f"Historique nettoyé pour {username} par {sender}")
-        return f"🐒✅ Ardoise nettoyée pour le babouin {username} par @{sender}"
+        return f"🐒✅ Ardoise nettoyée pour le babouin {username} par {sender}"
     
     def _cmd_stats(self, irc_client, channel: str, sender: str, args: list) -> str:
         """Affiche les statistiques générales du bot."""
@@ -220,7 +220,7 @@ class AdminCommands:
                 self.nickname_filter.reload_patterns()
             
             self.logger.info(f"Configuration rechargée par {sender}")
-            return f"🐒✅ Règles de la tribu rechargées par @{sender}"
+            return f"🐒✅ Règles de la tribu rechargées par {sender}"
             
         except Exception as e:
             return f"❌ Erreur lors du rechargement: {str(e)}"
@@ -234,9 +234,9 @@ class AdminCommands:
         username = args[1]
         
         if action == "add":
-            return f"🐒✅ {username} ajouté aux babouins protégés par @{sender}"
+            return f"🐒✅ {username} ajouté aux babouins protégés par {sender}"
         elif action == "remove":
-            return f"🐒✅ {username} retiré des babouins protégés par @{sender}"
+            return f"🐒✅ {username} retiré des babouins protégés par {sender}"
         else:
             return baboon_vocab.get_error_message('invalid_usage')
     
@@ -249,9 +249,9 @@ class AdminCommands:
         username = args[1]
         
         if action == "add":
-            return f"🐒⚠️ {username} ajouté aux babouins indésirables par @{sender}"
+            return f"🐒⚠️ {username} ajouté aux babouins indésirables par {sender}"
         elif action == "remove":
-            return f"🐒✅ {username} retiré des babouins indésirables par @{sender}"
+            return f"🐒✅ {username} retiré des babouins indésirables par {sender}"
         else:
             return baboon_vocab.get_error_message('invalid_usage')
     
@@ -265,9 +265,9 @@ class AdminCommands:
         
         try:
             if action == "add":
-                return f"🐒✅ Gros mot '{pattern}' ajouté aux interdictions par @{sender}"
+                return f"🐒✅ Gros mot '{pattern}' ajouté aux interdictions par {sender}"
             elif action == "remove":
-                return f"🐒✅ Gros mot '{pattern}' retiré des interdictions par @{sender}"
+                return f"🐒✅ Gros mot '{pattern}' retiré des interdictions par {sender}"
             else:
                 return baboon_vocab.get_error_message('invalid_usage')
         except Exception as e:

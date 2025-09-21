@@ -172,17 +172,17 @@ class BaboonVocabulary:
         prefix = self.prefixes.get(action, '🐒')
         
         if action == 'kick':
-            base_msg = f"{prefix} @{user} a été DEGOMMÉ de la tribu"
+            base_msg = f"{prefix} {user} a été DEGOMMÉ de la tribu"
         elif action == 'ban':
-            base_msg = f"{prefix} @{user} a été banni de la jungle"
+            base_msg = f"{prefix} {user} a été banni de la jungle"
         elif action == 'warning':
-            base_msg = f"{prefix} @{user}, attention ! Grondement de la tribu"
+            base_msg = f"{prefix} {user}, attention ! Grondement de la tribu"
         elif action == 'welcome':
-            base_msg = f"{prefix} Bienvenue dans notre jungle @{user} !"
+            base_msg = f"{prefix} Bienvenue dans notre jungle {user} !"
         elif action == 'unban':
-            base_msg = f"{prefix} @{user} a été gracié et peut revenir dans la jungle"
+            base_msg = f"{prefix} {user} a été gracié et peut revenir dans la jungle"
         else:
-            base_msg = f"{prefix} Action sur @{user}"
+            base_msg = f"{prefix} Action sur {user}"
         
         if reason:
             baboon_reason = self.baboonify_text(reason)

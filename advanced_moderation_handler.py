@@ -102,12 +102,12 @@ class AdvancedModerationHandler:
         
         # Messages par type de violation (avec vocabulaire Baboon)
         self.violation_messages = {
-            'sexual': "🐒 @{user}, ce genre de bavardage c'est plutôt sur la tribu #adultes ! 😊",
-            'harassment': "⚠️ @{user}, restons courtois entre babouins !",
-            'hate': "❌ @{user}, pas de gros mots de singe ici s'il te plaît.",
-            'violence': "🚫 @{user}, évitez les comportements violents dans notre tribu.",
-            'illicit': "🚔 @{user}, les références aux substances de la jungle ne sont pas autorisées ici.",
-            'self-harm': "💜 @{user}, si tu as besoin d'aide, n'hésite pas à contacter un chef de la tribu."
+            'sexual': "🐒 {user}, ce genre de bavardage c'est plutôt sur la tribu #adultes ! 😊",
+            'harassment': "⚠️ {user}, restons courtois entre babouins !",
+            'hate': "❌ {user}, pas de gros mots de singe ici s'il te plaît.",
+            'violence': "🚫 {user}, évitez les comportements violents dans notre tribu.",
+            'illicit': "🚔 {user}, les références aux substances de la jungle ne sont pas autorisées ici.",
+            'self-harm': "💜 {user}, si tu as besoin d'aide, n'hésite pas à contacter un chef de la tribu."
         }
         
         # Dernière action par utilisateur pour éviter le spam
