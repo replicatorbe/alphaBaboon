@@ -18,6 +18,7 @@ from irc_client import IRCClient
 from advanced_moderation_handler import AdvancedModerationHandler
 from healthcheck import HealthChecker
 from state_manager import StateManager
+from timing_config import TimingConfig
 
 
 class AlphaBaboonBot:
@@ -125,8 +126,18 @@ class AlphaBaboonBot:
             self.logger = logging.getLogger(__name__)
             log_startup_info()
             
+            # Initialiser la configuration des timings
+            self.timing = TimingConfig(self.config)
+            
+            # Valider la configuration des timings
+            timing_errors = self.timing.validate_config()
+            if timing_errors:
+                self.logger.warning(f"Erreurs config timing: {timing_errors}")
+            else:
+                self.logger.info("Configuration timing validée ✅")
+            
             # Initialisation du gestionnaire de modération
-            self.moderation_handler = AdvancedModerationHandler(self.config)
+            self.moderation_handler = AdvancedModerationHandler(self.config, self.timing)
             
             # Initialisation du gestionnaire d'état
             self.state_manager = StateManager(self.config)
