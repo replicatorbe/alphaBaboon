@@ -184,7 +184,14 @@ class AdvancedModerationHandler:
                     severity_level=0,
                     reason="Exception: demande de kick autorisée"
                 )
-            if 'tu viens d\'où' in message_lower or 'tu viens d ou' in message_lower:
+            # Exceptions pour questions géographiques (faux positifs fréquents)
+            geographic_patterns = [
+                'tu es d\'où', 'tu es d ou', 'tu viens d\'où', 'tu viens d ou',
+                'tu habites où', 'tu habites ou', 'quelle région', 'quel coin',
+                'tu es de quel', 'vous êtes d\'où', 'vous êtes d ou',
+                'de quelle ville', 'tu vis où', 'tu vis ou'
+            ]
+            if any(pattern in message_lower for pattern in geographic_patterns):
                 return ModerationResult(
                     is_violation=False,
                     violation_types=[],
@@ -192,6 +199,22 @@ class AdvancedModerationHandler:
                     severity_level=0,
                     reason="Exception: question géographique autorisée"
                 )
+            
+            # Exceptions pour mots/expressions innocents causant des faux positifs
+            innocent_patterns = [
+                'dick', 'zizi', 'pipi', 'caca',  # Mots enfantins/prénoms
+                'abusé parfois', 'c\'est abusé', 'trop abusé',  # Expressions courantes
+                'il a raison', 'elle a raison', 'tu as raison'  # Validations
+            ]
+            for pattern in innocent_patterns:
+                if pattern in message_lower and len(message.split()) <= 8:  # Messages courts seulement
+                    return ModerationResult(
+                        is_violation=False,
+                        violation_types=[],
+                        confidence_score=0.0,
+                        severity_level=0,
+                        reason=f"Exception: expression innocente '{pattern}' autorisée"
+                    )
             # Exception pour références d'âge innocentes
             import re
             age_pattern = r'\b(à|a)\s+\d{1,2}\s+ans?\b'
