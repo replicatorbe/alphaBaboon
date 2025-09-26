@@ -158,6 +158,11 @@ class IRCClient(irc.bot.SingleServerIRCBot):
             channel = event.target
             user = event.source.nick if hasattr(event.source, 'nick') else str(event.source)
             
+            # S'assurer que le canal existe dans la structure self.channels
+            if channel not in self.channels:
+                self.channels[channel] = irc.bot.Channel()
+                self.logger.debug(f"Canal {channel} initialisé dans la structure channels")
+            
             # Si c'est notre bot qui rejoint
             if user == self.config['irc']['nickname']:
                 self.joined_channels.add(channel)
