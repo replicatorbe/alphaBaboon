@@ -16,6 +16,14 @@ class BadWordsFilter:
         self.config = config
         self.logger = logging.getLogger(__name__)
         
+        # Liste d'exceptions (mots autorisés même s'ils contiennent des patterns interdits)
+        self.whitelist = [
+            "trankille",
+            "tranquille",
+            "trankil",
+            "trankilles"
+        ]
+        
         # Liste des mots interdits avec patterns (précis pour éviter faux positifs)
         self.badwords = [
             "*fuck*",
@@ -191,6 +199,12 @@ class BadWordsFilter:
         
         # Normaliser le message (espaces multiples, etc.)
         normalized_message = ' '.join(message.split()).lower()
+        
+        # Vérifier d'abord la whitelist (exceptions)
+        for whitelisted_word in self.whitelist:
+            if whitelisted_word.lower() in normalized_message:
+                # Le message contient un mot de la whitelist, ne pas sanctionner
+                return False, None
         
         # Tester chaque pattern
         for original_pattern, compiled_pattern in self.compiled_patterns:
