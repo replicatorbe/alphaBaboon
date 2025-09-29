@@ -42,10 +42,13 @@ class AdminCommands:
             'badword': self._cmd_badword,
             'help': self._cmd_help,
             'ban': self._cmd_ban,
+            'banpseudo': self._cmd_banpseudo,
             'unban': self._cmd_unban,
             'kick': self._cmd_kick,
             'phonestats': self._cmd_phonestats,
-            'hostinfo': self._cmd_hostinfo
+            'hostinfo': self._cmd_hostinfo,
+            'clearcache': self._cmd_clearcache,
+            'regle': self._cmd_regle
         }
         
         # Cache des statuts utilisateur pour optimisation
@@ -178,12 +181,18 @@ class AdminCommands:
         if hasattr(self.moderation_handler, 'phone_moderator'):
             phone_stats = self.moderation_handler.phone_moderator.get_stats_summary()
         
+        # Stats hosts cache
+        cache_stats = self.host_resolver.get_cache_stats()
+        
         response = f"🐒📈 Stats de la jungle: "
         response += f"🚫 Babouins avec gros mots: {badword_stats.get('users_with_violations', 0)}, "
         
         if phone_stats:
             response += f"📞 Babouins avec avert. banane: {phone_stats.get('users_with_warnings', 0)}, "
             response += f"Bannis banane: {phone_stats.get('currently_banned', 0)}, "
+        
+        # Ajout des stats de cache hosts
+        response += f"🔍 Hosts trackés: {cache_stats['total_cached']} ({cache_stats['expired_entries']} exp.), "
         
         # Uptime approximatif (depuis le dernier redémarrage)
         uptime_hours = int((time.time() - getattr(self, '_start_time', time.time())) / 3600)
@@ -285,27 +294,37 @@ class AdminCommands:
         reason = " ".join(args[1:]) if len(args) > 1 else f"Banni par {sender}"
         
         try:
-            # Récupérer le masque de ban optimal (*@host si possible)
-            ban_mask = self.host_resolver.get_ban_mask(irc_client, channel, username)
-            user_info = self.host_resolver.get_user_full_info(irc_client, channel, username)
+            # Essayer d'abord de récupérer le host directement depuis WHO
+            host = self._get_user_host_via_who(irc_client, username)
             
-            # Appliquer le ban avec le masque optimal
-            ban_command = f"samode {channel} +b {ban_mask}"
+            if host:
+                # Ban par host: plus efficace
+                ban_mask = f"*@{host}"
+                ban_type = "par host"
+                has_host = True
+            else:
+                # Fallback: ban par pseudo
+                ban_mask = f"{username}!*@*"
+                ban_type = "par pseudo"
+                has_host = False
+                host = "N/A"
+            
+            # Appliquer le ban
+            ban_command = f"mode {channel} +b {ban_mask}"
             irc_client.connection.send_raw(ban_command)
             
-            # Log détaillé avec informations host
+            # Log détaillé
             ban_detail = {
                 'username': username,
                 'ban_mask': ban_mask,
-                'has_host': user_info.get('has_host', False),
-                'host': user_info.get('host', 'N/A'),
+                'has_host': has_host,
+                'host': host,
                 'banned_by': sender,
                 'reason': reason
             }
             self.logger.warning(f"🔨 BAN APPLIED: {ban_detail}")
             
-            # Message de retour avec info sur le type de ban
-            ban_type = "par host" if user_info.get('has_host') else "par pseudo"
+            # Message de retour
             response = baboon_vocab.get_action_message('ban', username, f"par l'Alpha {sender}")
             response += f" (Ban {ban_type}: {ban_mask})"
             
@@ -324,33 +343,42 @@ class AdminCommands:
         username = args[0]
         
         try:
-            # Essayer d'unban avec le host d'abord (plus efficace)
+            # Essayer tous les formats possibles de ban
+            unban_masks = []
+            unban_type_parts = []
+            
+            # 1. Vérifier si on a un host en cache pour ce user
             user_info = self.host_resolver.get_user_full_info(irc_client, channel, username)
-            ban_mask = user_info.get('ban_mask', f"{username}!*@*")
             
-            # Unban avec le masque détecté
-            unban_command = f"samode {channel} -b {ban_mask}"
-            irc_client.connection.send_raw(unban_command)
-            
-            # Si on a un host, essayer aussi l'ancien format par sécurité
             if user_info.get('has_host'):
-                fallback_unban = f"samode {channel} -b *@{username}"
-                irc_client.connection.send_raw(fallback_unban)
-                unban_type = "par host + fallback pseudo"
-            else:
-                unban_type = "par pseudo"
+                # Format par host: *@host
+                host = user_info.get('host')
+                host_mask = f"*@{host}"
+                unban_masks.append(host_mask)
+                unban_type_parts.append("host")
+            
+            # 2. Toujours essayer le format par pseudo: pseudo!*@*
+            pseudo_mask = f"{username}!*@*"
+            unban_masks.append(pseudo_mask)
+            unban_type_parts.append("pseudo")
+            
+            # Envoyer toutes les commandes unban
+            for mask in unban_masks:
+                unban_command = f"mode {channel} -b {mask}"
+                irc_client.connection.send_raw(unban_command)
+                self.logger.info(f"Unban envoyé: {unban_command}")
             
             # Log détaillé
             unban_detail = {
                 'username': username,
-                'unban_mask': ban_mask,
-                'unban_type': unban_type,
+                'unban_masks': unban_masks,
+                'unban_type': " + ".join(unban_type_parts),
                 'unbanned_by': sender
             }
             self.logger.info(f"✅ UNBAN APPLIED: {unban_detail}")
             
             response = baboon_vocab.get_action_message('unban', username, f"par l'Alpha {sender}")
-            response += f" ({unban_type})"
+            response += f" ({' + '.join(unban_type_parts)})"
             
             return response
             
@@ -398,20 +426,199 @@ class AdminCommands:
             user_info = self.host_resolver.get_user_full_info(irc_client, channel, username)
             cache_stats = self.host_resolver.get_cache_stats()
             
-            response = f"🐒🔍 Info host pour {username}: "
-            response += f"Host: {user_info.get('host', 'Inconnu')}, "
-            response += f"Masque ban: {user_info.get('ban_mask', 'N/A')}, "
-            response += f"Host détecté: {'✅' if user_info.get('has_host') else '❌'}"
+            # Status plus détaillé
+            if user_info.get('has_host'):
+                host_status = f"✅ {user_info['host']}"
+                ban_will_use = "par host (*@host)" 
+            else:
+                host_status = "❌ Non trouvé"
+                ban_will_use = "par pseudo (pseudo!*@*)"
             
+            response = f"🐒🔍 {username}: Host {host_status}"
+            
+            # Âge du cache plus lisible
             if user_info.get('cache_age') is not None:
-                response += f", Cache âge: {user_info['cache_age']}s"
+                age = user_info['cache_age']
+                if age < 60:
+                    age_str = f"{age}s"
+                elif age < 3600:
+                    age_str = f"{age//60}min"
+                else:
+                    age_str = f"{age//3600}h"
+                response += f" (Cache: {age_str})"
+            else:
+                response += " (Pas en cache)"
             
-            response += f" | Cache total: {cache_stats['total_cached']} hosts"
+            response += f" | Ban utilisera: {ban_will_use}"
+            response += f" | Cache: {cache_stats['total_cached']}/{cache_stats['expired_entries']} exp."
             
             return response
             
         except Exception as e:
             return baboon_vocab.get_error_message('command_error') + f" {str(e)}"
+    
+    def _cmd_clearcache(self, irc_client, channel: str, sender: str, args: list) -> str:
+        """Vide le cache des hosts pour forcer une nouvelle détection."""
+        try:
+            cache_stats_before = self.host_resolver.get_cache_stats()
+            hosts_count = cache_stats_before['total_cached']
+            
+            # Vider le cache
+            self.host_resolver.clear_cache()
+            
+            self.logger.info(f"Cache hosts vidé par {sender} ({hosts_count} entrées supprimées)")
+            return f"🐒🗑️ Cache des hosts vidé par {sender} ({hosts_count} babouins oubliés)"
+            
+        except Exception as e:
+            self.logger.error(f"Erreur vidage cache: {e}")
+            return baboon_vocab.get_error_message('command_error') + f" {str(e)}"
+    
+    def _cmd_banpseudo(self, irc_client, channel: str, sender: str, args: list) -> str:
+        """Ban un utilisateur par pseudo (pseudo!*@*) uniquement."""
+        if not args:
+            return baboon_vocab.get_error_message('invalid_usage') + " Usage: !banpseudo <babouin> [raison]"
+        
+        username = args[0]
+        reason = " ".join(args[1:]) if len(args) > 1 else f"Banni par {sender}"
+        
+        try:
+            # Utiliser directement le masque pseudo
+            ban_mask = self.host_resolver.get_pseudo_ban_mask(username)
+            
+            # Appliquer le ban avec le masque pseudo
+            ban_command = f"mode {channel} +b {ban_mask}"
+            irc_client.connection.send_raw(ban_command)
+            
+            # Log détaillé
+            ban_detail = {
+                'username': username,
+                'ban_mask': ban_mask,
+                'ban_type': 'pseudo_only',
+                'banned_by': sender,
+                'reason': reason
+            }
+            self.logger.warning(f"🔨 BANPSEUDO APPLIED: {ban_detail}")
+            
+            response = baboon_vocab.get_action_message('ban', username, f"par l'Alpha {sender}")
+            response += f" (Ban par pseudo: {ban_mask})"
+            
+            return response
+            
+        except Exception as e:
+            error_detail = f"Erreur banpseudo {username}: {str(e)}"
+            self.logger.error(error_detail)
+            return baboon_vocab.get_error_message('command_error') + f" {str(e)}"
+    
+    def _cmd_regle(self, irc_client, channel: str, sender: str, args: list) -> str:
+        """Affiche les règles de bon savoir vivre sur le tchat."""
+        try:
+            # Vérifier si le channel a le mode +V activé
+            has_voice_mode = self._check_channel_voice_mode(irc_client, channel)
+            
+            # Règles de base communes
+            rules = [
+                "🐒📋 Règles de bon savoir vivre sur le tchat:",
+                "• Respect mutuel entre tous les babouins",
+                "• Pas d'insultes, de harcèlement ou d'attaques personnelles", 
+                "• Pas de spam ou de flood",
+                "• Pas de publicité non autorisée",
+                "• Respecter les décisions des modérateurs"
+            ]
+            
+            # Ajouter règle adulte selon le mode +V
+            if not has_voice_mode:
+                rules.append("• Discussions à caractère adulte interdites")
+            
+            rules.append("• Utiliser le bon sens et garder une ambiance conviviale 🌴")
+            
+            # Joindre les règles avec des retours à la ligne
+            response = " | ".join(rules)
+            
+            self.logger.info(f"Règles affichées sur {channel} par {sender} (Mode +V: {has_voice_mode})")
+            return response
+            
+        except Exception as e:
+            self.logger.error(f"Erreur affichage règles: {e}")
+            return baboon_vocab.get_error_message('command_error') + f" {str(e)}"
+    
+    def _check_channel_voice_mode(self, irc_client, channel: str) -> bool:
+        """
+        Vérifie si le channel a le mode +V activé.
+        Retourne True si +V est actif, False sinon.
+        """
+        try:
+            # Méthode 1: Liste des canaux connus avec mode +V (hardcodé pour #adultes)
+            voice_only_channels = ['#adultes']  # Canaux connus comme étant en mode +V
+            if channel.lower() in [c.lower() for c in voice_only_channels]:
+                self.logger.debug(f"Canal {channel} identifié comme +V (liste hardcodée)")
+                return True
+            
+            # Méthode 2: Vérifier dans les propriétés du channel si disponibles
+            if hasattr(irc_client, 'channels') and channel in irc_client.channels:
+                channel_obj = irc_client.channels[channel]
+                
+                # Vérifier les modes du channel
+                if hasattr(channel_obj, 'modes'):
+                    modes = str(channel_obj.modes)
+                    if 'V' in modes or 'v' in modes:
+                        self.logger.debug(f"Mode +V détecté via channel.modes pour {channel}: {modes}")
+                        return True
+                
+                # Vérifier d'autres propriétés possibles
+                if hasattr(channel_obj, 'voice_only') and channel_obj.voice_only:
+                    self.logger.debug(f"Mode +V détecté via channel.voice_only pour {channel}")
+                    return True
+                
+                # Vérifier les attributs du channel
+                for attr in dir(channel_obj):
+                    if 'voice' in attr.lower() or 'mode' in attr.lower():
+                        try:
+                            value = getattr(channel_obj, attr)
+                            if 'V' in str(value) or (hasattr(value, '__call__') and 'V' in str(value())):
+                                self.logger.debug(f"Mode +V peut-être détecté via {attr} pour {channel}")
+                                return True
+                        except:
+                            continue
+            
+            # Méthode 3: Envoyer une requête MODE pour obtenir les modes du canal
+            try:
+                irc_client.connection.send_raw(f"MODE {channel}")
+                self.logger.debug(f"Requête MODE envoyée pour {channel}")
+            except:
+                pass
+            
+            # Par défaut, considérer qu'il n'y a pas de mode +V
+            self.logger.debug(f"Aucun mode +V détecté pour {channel}")
+            return False
+            
+        except Exception as e:
+            self.logger.warning(f"Erreur vérification mode +V pour {channel}: {e}")
+            return False
+    
+    def _get_user_host_via_who(self, irc_client, username: str) -> Optional[str]:
+        """
+        Récupère le host d'un utilisateur, principalement depuis le cache.
+        """
+        try:
+            # Méthode 1: Vérifier dans le cache du host_resolver (alimenté automatiquement)
+            if self.host_resolver._is_host_cached(username):
+                cached_host = self.host_resolver.user_hosts[username]
+                self.logger.info(f"Host trouvé en cache pour {username}: {cached_host}")
+                return cached_host
+            
+            # Si pas en cache, l'utilisateur n'a probablement pas été vu récemment
+            # Envoyer un WHOIS pour forcer la récupération (asynchrone)
+            self.logger.info(f"Host non trouvé en cache pour {username}, envoi WHOIS")
+            irc_client.connection.send_raw(f"WHOIS {username}")
+            
+            # Retourner None pour utiliser le ban par pseudo
+            # Le WHOIS mettra à jour le cache pour les prochaines fois
+            self.logger.info(f"Utilisation du ban par pseudo pour {username} (host non disponible)")
+            return None
+            
+        except Exception as e:
+            self.logger.error(f"Erreur récupération host pour {username}: {e}")
+            return None
 
 
 if __name__ == "__main__":

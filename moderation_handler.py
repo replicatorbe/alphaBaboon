@@ -144,8 +144,8 @@ class ModerationHandler:
             # Programmer le ban après quelques secondes
             def apply_ban():
                 try:
-                    # Commande samode pour mettre en sourdine (sans /)
-                    ban_command = f"samode {channel} +b {user}!*@*"
+                    # Commande mode pour mettre en sourdine (sans /)
+                    ban_command = f"mode {channel} +b {user}!*@*"
                     irc_connection.connection.send_raw(ban_command)
                     
                     self.logger.warning(f"Ban appliqué: {user} sur {channel} pour numéros de téléphone")
