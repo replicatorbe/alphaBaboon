@@ -54,6 +54,15 @@ class HostResolver:
                                     host = user_info.host
                                     self._cache_host(username, host)
                                     return host
+                                    
+                # Méthode alternative: chercher dans users_data si disponible
+                if hasattr(channel_obj, 'users_data'):
+                    for user_data in channel_obj.users_data.values():
+                        if hasattr(user_data, 'nick') and user_data.nick.lower() == username.lower():
+                            if hasattr(user_data, 'host') and user_data.host:
+                                host = user_data.host
+                                self._cache_host(username, host)
+                                return host
             
             # Méthode 2: Parsing depuis les événements IRC récents
             # (Les infos host sont souvent disponibles dans les événements join/who)
@@ -64,7 +73,13 @@ class HostResolver:
                     self._cache_host(username, host)
                     return host
             
-            # Méthode 3: Envoyer une requête WHO (peut prendre du temps)
+            # Méthode 3: Tenter d'extraire le host depuis les données de connexion récentes
+            host = self._extract_host_from_recent_data(irc_client, username)
+            if host:
+                self._cache_host(username, host)
+                return host
+            
+            # Méthode 4: Envoyer une requête WHO (peut prendre du temps)
             self._request_who_info(irc_client, username)
             
             self.logger.warning(f"Impossible de récupérer le host pour {username}")
@@ -91,6 +106,15 @@ class HostResolver:
             ban_mask = f"{username}!*@*"
             self.logger.warning(f"Ban mask pour {username}: {ban_mask} (fallback par nick)")
             return ban_mask
+
+    def get_pseudo_ban_mask(self, username: str) -> str:
+        """
+        Génère un masque de ban par pseudo uniquement.
+        Retourne toujours pseudo!*@*.
+        """
+        ban_mask = f"{username}!*@*"
+        self.logger.info(f"Ban mask pseudo pour {username}: {ban_mask}")
+        return ban_mask
     
     def get_user_full_info(self, irc_client, channel: str, username: str) -> Dict:
         """
@@ -114,7 +138,7 @@ class HostResolver:
             return {
                 'username': username,
                 'host': None,
-                'ban_mask': f"*@{username}",
+                'ban_mask': f"{username}!*@*",
                 'has_host': False,
                 'error': str(e)
             }
@@ -142,6 +166,41 @@ class HostResolver:
             return None
         return int(time.time() - self.last_updated[username])
     
+    def _extract_host_from_recent_data(self, irc_client, username: str) -> Optional[str]:
+        """
+        Tente d'extraire le host depuis les données de connexion récentes.
+        """
+        try:
+            # Vérifier dans l'historique des connexions/déconnexions
+            if hasattr(irc_client, 'connection_history'):
+                for event in reversed(irc_client.connection_history[-50:]):  # 50 derniers événements
+                    if hasattr(event, 'source') and username.lower() in event.source.lower():
+                        # Format typique: nick!user@host
+                        if '@' in event.source and '!' in event.source:
+                            parts = event.source.split('@')
+                            if len(parts) >= 2:
+                                host = parts[-1]  # Dernière partie après @
+                                self.logger.debug(f"Host trouvé depuis l'historique pour {username}: {host}")
+                                return host
+            
+            # Vérifier dans les événements de message récents
+            if hasattr(irc_client, 'recent_messages'):
+                for msg_data in reversed(irc_client.recent_messages[-20:]):  # 20 derniers messages
+                    if msg_data.get('nick', '').lower() == username.lower():
+                        source = msg_data.get('source', '')
+                        if '@' in source and '!' in source:
+                            parts = source.split('@')
+                            if len(parts) >= 2:
+                                host = parts[-1]
+                                self.logger.debug(f"Host trouvé depuis les messages pour {username}: {host}")
+                                return host
+            
+            return None
+            
+        except Exception as e:
+            self.logger.error(f"Erreur extraction host depuis données récentes pour {username}: {e}")
+            return None
+
     def _request_who_info(self, irc_client, username: str):
         """
         Demande les infos WHO pour un utilisateur.
@@ -153,6 +212,23 @@ class HostResolver:
             self.logger.debug(f"Requête WHO envoyée pour {username}")
         except Exception as e:
             self.logger.error(f"Erreur envoi WHO pour {username}: {e}")
+    
+    def capture_host_from_event(self, username: str, source: str):
+        """
+        Capture et met en cache le host depuis un événement IRC.
+        Format source attendu: nick!user@host
+        """
+        try:
+            if '@' in source and '!' in source:
+                parts = source.split('@')
+                if len(parts) >= 2:
+                    host = parts[-1]
+                    self._cache_host(username, host)
+                    self.logger.debug(f"Host capturé depuis événement pour {username}: {host}")
+                    return host
+        except Exception as e:
+            self.logger.error(f"Erreur capture host depuis événement pour {username}: {e}")
+        return None
     
     def clear_cache(self):
         """Vide le cache des hosts."""

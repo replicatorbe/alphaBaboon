@@ -158,6 +158,11 @@ class IRCClient(irc.bot.SingleServerIRCBot):
             channel = event.target
             user = event.source.nick if hasattr(event.source, 'nick') else str(event.source)
             
+            # Capturer le host de l'utilisateur qui rejoint
+            if hasattr(self, 'admin_commands') and hasattr(self.admin_commands, 'host_resolver'):
+                full_source = str(event.source)  # Format: nick!user@host
+                self.admin_commands.host_resolver.capture_host_from_event(user, full_source)
+            
             # S'assurer que le canal existe dans la structure self.channels
             if channel not in self.channels:
                 self.channels[channel] = irc.bot.Channel()
@@ -194,6 +199,11 @@ class IRCClient(irc.bot.SingleServerIRCBot):
             channel = event.target
             message = event.arguments[0] if event.arguments else ""
             sender = event.source.nick if hasattr(event.source, 'nick') else str(event.source)
+            
+            # Capturer le host de l'utilisateur qui envoie un message
+            if hasattr(self, 'admin_commands') and hasattr(self.admin_commands, 'host_resolver'):
+                full_source = str(event.source)  # Format: nick!user@host
+                self.admin_commands.host_resolver.capture_host_from_event(sender, full_source)
             
             # Ignorer les messages du bot lui-même
             if sender == self.config['irc']['nickname']:

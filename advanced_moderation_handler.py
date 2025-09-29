@@ -493,7 +493,7 @@ class AdvancedModerationHandler:
             
             def apply_ban():
                 try:
-                    ban_command = f"samode {channel} +b {user}!*@*"
+                    ban_command = f"mode {channel} +b {user}!*@*"
                     irc_client.connection.send_raw(ban_command)
                     self.logger.warning(f"Ban appliqué: {user} sur {channel} pour numéros de téléphone")
                 except Exception as e:
