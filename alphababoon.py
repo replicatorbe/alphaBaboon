@@ -215,6 +215,17 @@ class AlphaBaboonBot:
         """Exécute le client IRC dans un thread séparé."""
         try:
             self.irc_client.start()
+        except ValueError as e:
+            # Gérer spécifiquement l'erreur "file descriptor cannot be a negative integer"
+            if "file descriptor cannot be a negative integer" in str(e):
+                self.logger.warning(f"Socket IRC fermé de manière inattendue: {e}")
+                self.logger.info("Le système de reconnexion automatique va prendre le relais...")
+                # Ne pas marquer running = False, laisser le système de reconnexion gérer
+            else:
+                self.logger.error(f"Erreur ValueError dans le client IRC: {e}")
+                import traceback
+                self.logger.error(f"Stack trace: {traceback.format_exc()}")
+                self.running = False
         except UnicodeDecodeError as e:
             self.logger.error(f"Erreur d'encodage dans le client IRC: {e}")
             self.logger.info("Tentative de redémarrage automatique du client IRC...")
