@@ -648,6 +648,15 @@ class AdminCommands:
             irc_client.connection.send_raw(sapart_command)
             self.logger.info(f"SAPART envoyé: {sapart_command}")
 
+            # 3. Envoyer un message privé à l'utilisateur pour expliquer
+            private_msg = (
+                f"🐒 Salut {username} ! Tu as été transféré vers la tribu {redirect_channel}. "
+                f"Les discussions pour adultes se passent sur {redirect_channel}, pas sur {channel}. "
+                f"Bon tchat sur Baboon Tchat ! 🌴"
+            )
+            irc_client.connection.privmsg(username, private_msg)
+            self.logger.info(f"Message privé envoyé à {username}")
+
             # Log de l'action
             self.logger.warning(f"🔀 FORCE ADULTES: {username} déplacé de {channel} vers {redirect_channel} par {sender}")
 
