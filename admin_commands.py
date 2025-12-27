@@ -48,7 +48,8 @@ class AdminCommands:
             'phonestats': self._cmd_phonestats,
             'hostinfo': self._cmd_hostinfo,
             'clearcache': self._cmd_clearcache,
-            'regle': self._cmd_regle
+            'regle': self._cmd_regle,
+            'fa': self._cmd_force_adultes
         }
         
         # Cache des statuts utilisateur pour optimisation
@@ -605,20 +606,57 @@ class AdminCommands:
                 cached_host = self.host_resolver.user_hosts[username]
                 self.logger.info(f"Host trouvé en cache pour {username}: {cached_host}")
                 return cached_host
-            
+
             # Si pas en cache, l'utilisateur n'a probablement pas été vu récemment
             # Envoyer un WHOIS pour forcer la récupération (asynchrone)
             self.logger.info(f"Host non trouvé en cache pour {username}, envoi WHOIS")
             irc_client.connection.send_raw(f"WHOIS {username}")
-            
+
             # Retourner None pour utiliser le ban par pseudo
             # Le WHOIS mettra à jour le cache pour les prochaines fois
             self.logger.info(f"Utilisation du ban par pseudo pour {username} (host non disponible)")
             return None
-            
+
         except Exception as e:
             self.logger.error(f"Erreur récupération host pour {username}: {e}")
             return None
+
+    def _cmd_force_adultes(self, irc_client, channel: str, sender: str, args: list) -> str:
+        """
+        Force un utilisateur à rejoindre #adultes et le fait partir du canal actuel.
+        Usage: !fa <pseudo>
+        Requiert les privilèges IRCop (SAJOIN/SAPART).
+        """
+        if not args:
+            return baboon_vocab.get_error_message('invalid_usage') + " Usage: !fa <babouin>"
+
+        username = args[0]
+        redirect_channel = self.config['irc'].get('redirect_channel', '#adultes')
+
+        # Vérifier que le bot est IRCop
+        if not self.config['irc'].get('is_ircop', False):
+            return "❌ Cette commande nécessite les privilèges IRCop"
+
+        try:
+            # 1. Forcer l'utilisateur à rejoindre #adultes avec SAJOIN
+            sajoin_command = f"SAJOIN {username} {redirect_channel}"
+            irc_client.connection.send_raw(sajoin_command)
+            self.logger.info(f"SAJOIN envoyé: {sajoin_command}")
+
+            # 2. Faire partir l'utilisateur du canal actuel avec SAPART
+            sapart_command = f"SAPART {username} {channel} :Redirigé vers {redirect_channel} par {sender}"
+            irc_client.connection.send_raw(sapart_command)
+            self.logger.info(f"SAPART envoyé: {sapart_command}")
+
+            # Log de l'action
+            self.logger.warning(f"🔀 FORCE ADULTES: {username} déplacé de {channel} vers {redirect_channel} par {sender}")
+
+            return f"🐒🔀 {username} envoyé dans la jungle des adultes ({redirect_channel}) par l'Alpha {sender}"
+
+        except Exception as e:
+            error_detail = f"Erreur force adultes {username}: {str(e)}"
+            self.logger.error(error_detail)
+            return baboon_vocab.get_error_message('command_error') + f" {str(e)}"
 
 
 if __name__ == "__main__":
