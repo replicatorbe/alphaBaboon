@@ -1,6 +1,10 @@
 # Fichiers de configuration sensibles
 config_secret.json
 
+# État runtime du bot (contient des données personnelles)
+bot_state.json
+bot_state_backup.json
+
 # Logs
 logs/
 *.log

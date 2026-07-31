@@ -4,7 +4,8 @@
 # Usage: ./start.sh {start|stop|restart|status}
 #
 
-BOT_DIR="/home/jerome/alphaBaboon"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+BOT_DIR="$SCRIPT_DIR"
 BOT_SCRIPT="alphababoon.py"
 PID_FILE="$BOT_DIR/alphababoon.pid"
 LOG_FILE="$BOT_DIR/logs/alphababoon.log"
